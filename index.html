@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexAI — Intelligent Automation Solutions</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="nav-wrap">
+    <nav class="nav container">
+      <a href="#" class="logo">Nex<span>AI</span></a>
+      <ul class="nav-links">
+        <li><a href="#products">Products</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#benefits">Benefits</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <a href="#contact" class="btn btn-primary nav-cta">Get a demo</a>
+      <button class="hamburger" aria-label="Toggle menu">&#9776;</button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-badge">AI-Powered Business Automation</div>
+      <h1 class="hero-title">
+        Automate the work.<br />
+        <span class="gradient-text">Amplify the results.</span>
+      </h1>
+      <p class="hero-sub">
+        Modular AI tools that plug into your existing workflows — from customer
+        conversations to invoice processing — so your team focuses on what
+        actually matters.
+      </p>
+      <div class="hero-actions">
+        <a href="#products" class="btn btn-primary">Explore products</a>
+        <a href="#contact" class="btn btn-ghost">Talk to sales &rarr;</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">10×</span><span class="stat-label">faster data entry</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">99%</span><span class="stat-label">extraction accuracy</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">customer support</span></div>
+      </div>
+    </div>
+    <div class="hero-bg-blob blob-1"></div>
+    <div class="hero-bg-blob blob-2"></div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="products" id="products">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Our Products</span>
+        <h2>Two tools. Endless efficiency.</h2>
+        <p>Each product is built to replace repetitive manual work with accurate, instant AI automation.</p>
+      </div>
+
+      <!-- Product 1 — AI Chat -->
+      <div class="product-card card-chat">
+        <div class="product-visual">
+          <div class="chat-mockup">
+            <div class="chat-header">
+              <div class="chat-avatar">AI</div>
+              <div>
+                <div class="chat-name">NexAI Assistant</div>
+                <div class="chat-status"><span class="dot green"></span> Online</div>
+              </div>
+            </div>
+            <div class="chat-messages">
+              <div class="msg msg-user">Hi, what are your working hours?</div>
+              <div class="msg msg-bot">We're available 24/7! How can I help you today?</div>
+              <div class="msg msg-user">I'd like to track my order.</div>
+              <div class="msg msg-bot">Sure! Please share your order number and I'll pull it up instantly.</div>
+            </div>
+            <div class="chat-input-bar">
+              <span class="chat-placeholder">Type a message…</span>
+              <button class="chat-send">&#10148;</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-content">
+          <div class="product-tag">AI Chat</div>
+          <h3>Intelligent chat for your website</h3>
+          <p>
+            Deploy a context-aware AI assistant on your website in minutes. It handles
+            FAQs, qualifies leads, books meetings, and escalates complex queries to your
+            team — all without writing a single line of code.
+          </p>
+          <ul class="feature-list">
+            <li><span class="check">✓</span> Trained on your content &amp; knowledge base</li>
+            <li><span class="check">✓</span> Multilingual support out of the box</li>
+            <li><span class="check">✓</span> Seamless CRM &amp; helpdesk integrations</li>
+            <li><span class="check">✓</span> Full conversation analytics dashboard</li>
+            <li><span class="check">✓</span> Human hand-off when needed</li>
+          </ul>
+          <a href="#contact" class="btn btn-primary">Request a demo</a>
+        </div>
+      </div>
+
+      <!-- Product 2 — Invoice Automation -->
+      <div class="product-card card-invoice reverse">
+        <div class="product-visual">
+          <div class="invoice-mockup">
+            <div class="inv-header">
+              <div class="inv-icon">&#128196;</div>
+              <div>
+                <div class="inv-title">Invoice Processing</div>
+                <div class="inv-sub">AI extraction engine</div>
+              </div>
+            </div>
+            <div class="inv-rows">
+              <div class="inv-row">
+                <span class="inv-label">Supplier</span>
+                <span class="inv-value extracted">Acme Corp s.r.o.</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-label">Invoice No.</span>
+                <span class="inv-value extracted">2024-08751</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-label">Date</span>
+                <span class="inv-value extracted">10. 05. 2026</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-label">Total (VAT incl.)</span>
+                <span class="inv-value extracted">48 350 Kč</span>
+              </div>
+              <div class="inv-row">
+                <span class="inv-label">VAT amount</span>
+                <span class="inv-value extracted">8 350 Kč</span>
+              </div>
+            </div>
+            <div class="inv-export-row">
+              <div class="export-chip excel"><span>XLS</span> Export to Excel</div>
+              <div class="export-chip pohoda"><span>P</span> Send to Pohoda</div>
+            </div>
+          </div>
+        </div>
+        <div class="product-content">
+          <div class="product-tag invoice-tag">Invoice Automation</div>
+          <h3>Extract invoices. Auto-fill Excel &amp; Pohoda.</h3>
+          <p>
+            Stop retyping invoices by hand. Our AI reads PDFs and scanned images,
+            extracts every relevant field, and pushes the data directly into your
+            Excel spreadsheets or Pohoda accounting system — error-free, in seconds.
+          </p>
+          <ul class="feature-list">
+            <li><span class="check check-invoice">✓</span> Supports PDF, JPG, PNG, TIFF &amp; scans</li>
+            <li><span class="check check-invoice">✓</span> Structured export to Excel (.xlsx)</li>
+            <li><span class="check check-invoice">✓</span> Direct Pohoda XML / API integration</li>
+            <li><span class="check check-invoice">✓</span> Duplicate &amp; anomaly detection</li>
+            <li><span class="check check-invoice">✓</span> Batch processing — hundreds at once</li>
+          </ul>
+          <a href="#contact" class="btn btn-invoice">Request a demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">How it works</span>
+        <h2>Up and running in three steps</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h4>Connect</h4>
+          <p>Integrate via our no-code setup wizard or REST API. Plug into your existing tools in under an hour.</p>
+        </div>
+        <div class="step-arrow">&#8594;</div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h4>Configure</h4>
+          <p>Feed the AI your documents, knowledge base, or invoice templates. The model adapts to your data.</p>
+        </div>
+        <div class="step-arrow">&#8594;</div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h4>Automate</h4>
+          <p>Watch repetitive tasks disappear. Monitor results in real-time on your analytics dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFITS -->
+  <section class="benefits" id="benefits">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why NexAI</span>
+        <h2>Built for businesses that move fast</h2>
+      </div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">&#9889;</div>
+          <h4>Instant deployment</h4>
+          <p>Go live in hours, not months. No custom development needed for standard integrations.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128275;</div>
+          <h4>Enterprise-grade security</h4>
+          <p>Data encrypted at rest and in transit. GDPR compliant. Hosted in EU data centers.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128200;</div>
+          <h4>Measurable ROI</h4>
+          <p>Customers report 60–80% reduction in manual processing time within the first month.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#127757;</div>
+          <h4>Czech &amp; Slovak ready</h4>
+          <p>Full support for Czech and Slovak languages, Pohoda accounting, and local invoice formats.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128296;</div>
+          <h4>Customizable</h4>
+          <p>Tailor AI behaviour, branding, and output formats to match your exact business rules.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#129309;</div>
+          <h4>Dedicated support</h4>
+          <p>Onboarding specialist, SLA-backed support, and a dedicated account manager from day one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA / CONTACT -->
+  <section class="contact" id="contact">
+    <div class="container contact-inner">
+      <div class="contact-text">
+        <span class="section-tag">Get started</span>
+        <h2>Ready to automate your workflow?</h2>
+        <p>Leave your details and our team will reach out within one business day to schedule a personalised demo.</p>
+        <ul class="contact-perks">
+          <li>&#10003; Free 14-day trial</li>
+          <li>&#10003; No credit card required</li>
+          <li>&#10003; Setup assistance included</li>
+        </ul>
+      </div>
+      <form class="contact-form" id="contactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Full name</label>
+            <input type="text" id="name" placeholder="Jan Novák" required />
+          </div>
+          <div class="form-group">
+            <label for="company">Company</label>
+            <input type="text" id="company" placeholder="Acme s.r.o." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Work email</label>
+          <input type="email" id="email" placeholder="jan@acme.cz" required />
+        </div>
+        <div class="form-group">
+          <label for="product">Product of interest</label>
+          <select id="product">
+            <option value="">Select a product…</option>
+            <option>AI Chat for website</option>
+            <option>Invoice Automation (Excel / Pohoda)</option>
+            <option>Both products</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">Message (optional)</label>
+          <textarea id="message" rows="3" placeholder="Tell us a bit about your use case…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary full-width">Send request &rarr;</button>
+        <p class="form-note">We respect your privacy. No spam, ever.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="logo">Nex<span>AI</span></a>
+        <p>AI automation tools built for modern businesses.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Products</h5>
+          <ul>
+            <li><a href="#products">AI Chat</a></li>
+            <li><a href="#products">Invoice Automation</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Company</h5>
+          <ul>
+            <li><a href="#benefits">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom container">
+      <span>&copy; 2026 NexAI. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
