@@ -10,6 +10,7 @@ const nav = [
   { href: '/dashboard/logs',               icon: '📋', label: 'Logy' },
   { href: '/dashboard/connections/email',  icon: '📧', label: 'E-mail' },
   { href: '/dashboard/connections/crm',    icon: '🔗', label: 'Účetnictví' },
+  { href: '/dashboard/billing',            icon: '💳', label: 'Fakturace' },
   { href: '/dashboard/settings',           icon: '⚙️',  label: 'Nastavení' },
 ]
 

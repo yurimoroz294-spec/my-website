@@ -48,6 +48,21 @@ export async function POST(request: NextRequest) {
 }
 
 async function processEmailConnection(conn: EmailConnection, supabase: Supa): Promise<number> {
+  // Check monthly invoice limit before doing any work
+  const { data: profileData } = await (supabase.from('profiles') as AnyTable)
+    .select('invoices_this_month, invoices_limit')
+    .eq('id', conn.user_id)
+    .single()
+
+  if (profileData) {
+    const used  = (profileData as { invoices_this_month: number; invoices_limit: number }).invoices_this_month
+    const limit = (profileData as { invoices_this_month: number; invoices_limit: number }).invoices_limit
+    if (used >= limit) {
+      console.warn(`User ${conn.user_id} hit invoice limit (${used}/${limit}). Skipping.`)
+      return 0
+    }
+  }
+
   let emails: Awaited<ReturnType<typeof fetchGmail>> = []
 
   try {
