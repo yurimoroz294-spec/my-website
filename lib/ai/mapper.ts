@@ -1,6 +1,9 @@
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+function getOpenAI(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not set')
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+}
 
 export interface FieldMapping {
   sourceField: string
@@ -30,7 +33,7 @@ Return JSON array of mappings:
 
 Map only fields with confidence > 0.5. Return ONLY valid JSON, no explanation.`
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
@@ -85,7 +88,7 @@ ${text.slice(0, 3000)}
 
 Vrať POUZE platný JSON objekt.`
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
@@ -100,7 +103,7 @@ Vrať POUZE platný JSON objekt.`
 }
 
 export async function parseInvoiceFromBase64(base64Image: string, mimeType = 'image/jpeg'): Promise<ParsedInvoice> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {

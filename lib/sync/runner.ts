@@ -91,7 +91,7 @@ async function executeTemplate(
           name: order.billing.company,
           ico: order.billing.ico,
           dic: order.billing.dic,
-          email: order.billing.email,
+          email: order.email,
         })
       }
       await raynet.createOrder({
