@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
@@ -22,7 +22,7 @@ const SCHEDULE_LABELS: Record<string, string> = {
 }
 
 export default async function SyncPage() {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) redirect('/sign-in')
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })

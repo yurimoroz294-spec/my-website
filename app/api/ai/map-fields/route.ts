@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { suggestFieldMapping } from '@/lib/ai/mapper'
@@ -13,10 +13,13 @@ const PLATFORM_FIELDS: Record<string, string[]> = {
   POHODA: ['symVar', 'ico', 'dic', 'company', 'date', 'dateDue', 'homeCurrency.priceNone',
     'homeCurrency.priceHighSummary', 'vatRate', 'currency'],
   PACKETA: ['id', 'barcode', 'status', 'statusDate', 'recipientName', 'recipientEmail', 'cod', 'weight'],
+  AIRTABLE: ['Číslo objednávky', 'Firma', 'IČO', 'DIČ', 'Email', 'Telefon', 'Celková cena', 'Stav',
+    'Datum objednávky', 'Variabilní symbol', 'Celkem s DPH', 'Datum vystavení', 'Datum splatnosti',
+    'ID zásilky', 'Stav zásilky', 'Tracking URL', 'Název firmy'],
 }
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })

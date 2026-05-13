@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import { getUsage } from '@/lib/usage'
@@ -15,7 +15,7 @@ const PLAN_FEATURES = {
 const PLAN_PRICES = { FREE: 0, PRO: 990, BUSINESS: 2490 }
 
 export default async function BillingPage() {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) redirect('/sign-in')
 
   const user = await prisma.user.findUnique({

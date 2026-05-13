@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { getCredentials } from '@/lib/kv'
@@ -6,9 +6,10 @@ import { RaynetClient } from '@/lib/integrations/raynet'
 import { ShoptetClient } from '@/lib/integrations/shoptet'
 import { PohodaClient } from '@/lib/integrations/pohoda'
 import { PacketaClient } from '@/lib/integrations/packeta'
+import { AirtableClient } from '@/lib/integrations/airtable'
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })
@@ -25,10 +26,15 @@ export async function POST(req: Request) {
   let ok = false
   try {
     switch (platform) {
-      case 'RAYNET':  ok = await new RaynetClient(creds as any).testConnection(); break
-      case 'SHOPTET': ok = await new ShoptetClient(creds as any).testConnection(); break
-      case 'POHODA':  ok = await new PohodaClient(creds as any).testConnection(); break
-      case 'PACKETA': ok = await new PacketaClient(creds as any).testConnection(); break
+      case 'RAYNET':    ok = await new RaynetClient(creds as any).testConnection(); break
+      case 'SHOPTET':   ok = await new ShoptetClient(creds as any).testConnection(); break
+      case 'POHODA':    ok = await new PohodaClient(creds as any).testConnection(); break
+      case 'PACKETA':   ok = await new PacketaClient(creds as any).testConnection(); break
+      case 'AIRTABLE': {
+        const res = await new AirtableClient(creds as any).testConnection()
+        ok = res.ok
+        break
+      }
     }
   } catch (e) {
     ok = false

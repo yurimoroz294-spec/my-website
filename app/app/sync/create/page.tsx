@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import { SyncWizard } from '@/components/sync/wizard'
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default async function CreateSyncPage({ searchParams }: Props) {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) redirect('/sign-in')
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })

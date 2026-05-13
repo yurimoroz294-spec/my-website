@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { checkLimit } from '@/lib/usage'
@@ -14,7 +14,7 @@ const CreateSchema = z.object({
 })
 
 export async function GET() {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })
@@ -34,7 +34,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })

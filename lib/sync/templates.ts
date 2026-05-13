@@ -2,11 +2,12 @@ export interface SyncTemplate {
   id: string
   name: string
   description: string
-  source: 'RAYNET' | 'SHOPTET' | 'POHODA' | 'PACKETA'
-  target: 'RAYNET' | 'SHOPTET' | 'POHODA' | 'PACKETA'
+  source: 'RAYNET' | 'SHOPTET' | 'POHODA' | 'PACKETA' | 'AIRTABLE'
+  target: 'RAYNET' | 'SHOPTET' | 'POHODA' | 'PACKETA' | 'AIRTABLE'
   defaultMapping: Record<string, string>
   icon: string
   popular?: boolean
+  proOnly?: boolean
 }
 
 export const SYNC_TEMPLATES: SyncTemplate[] = [
@@ -79,6 +80,78 @@ export const SYNC_TEMPLATES: SyncTemplate[] = [
     defaultMapping: {
       'id':     'trackingNumber',
       'status': 'orderStatus',
+    },
+  },
+  {
+    id: 'shoptet-airtable-orders',
+    name: 'Shoptet → Airtable: Objednávky & projekty',
+    description: 'Každá nová objednávka ze Shoptetu se uloží do Airtable jako záznam s termínem, stavem a odpovědnou osobou. Ideální pro projektové řízení e-shopu.',
+    source: 'SHOPTET',
+    target: 'AIRTABLE',
+    proOnly: true,
+    popular: true,
+    icon: '📋',
+    defaultMapping: {
+      'code':              'Číslo objednávky',
+      'billing.company':   'Firma',
+      'billing.ico':       'IČO',
+      'totalPriceWithVat': 'Celková cena',
+      'status':            'Stav',
+      'creationTime':      'Datum objednávky',
+      'billing.email':     'Email',
+    },
+  },
+  {
+    id: 'raynet-airtable-contacts',
+    name: 'RAYNET → Airtable: CRM kontakty',
+    description: 'Synchronizuje kontakty a firmy z RAYNET CRM do Airtable. Udržujte přehled o klientech s historií hovorů, poznámkami a fotografiemi.',
+    source: 'RAYNET',
+    target: 'AIRTABLE',
+    proOnly: true,
+    icon: '👥',
+    defaultMapping: {
+      'name':       'Název firmy',
+      'regNumber':  'IČO',
+      'taxNumber':  'DIČ',
+      'email':      'Email',
+      'phone':      'Telefon',
+      'category':   'Kategorie',
+      'owner':      'Odpovědná osoba',
+    },
+  },
+  {
+    id: 'pohoda-airtable-invoices',
+    name: 'Pohoda → Airtable: Fakturační přehled',
+    description: 'Exportuje faktury z Pohody do Airtable pro přehledný pohled na pohledávky. Sledujte splatnosti, DPH a platební stav na jednom místě.',
+    source: 'POHODA',
+    target: 'AIRTABLE',
+    proOnly: true,
+    icon: '💰',
+    defaultMapping: {
+      'symVar':                    'Variabilní symbol',
+      'company':                   'Firma',
+      'ico':                       'IČO',
+      'dic':                       'DIČ',
+      'homeCurrency.priceHighSummary': 'Celkem s DPH',
+      'date':                      'Datum vystavení',
+      'dateDue':                   'Datum splatnosti',
+    },
+  },
+  {
+    id: 'packeta-airtable-shipments',
+    name: 'Packeta → Airtable: Zásilky & logistika',
+    description: 'Sledujte všechny zásilky Packety v Airtable. Automaticky aktualizuje stav doručení, eviduje reklamace a upozorní na nedoručené zásilky.',
+    source: 'PACKETA',
+    target: 'AIRTABLE',
+    proOnly: true,
+    icon: '🚚',
+    defaultMapping: {
+      'id':           'ID zásilky',
+      'status':       'Stav zásilky',
+      'trackingUrl':  'Tracking URL',
+      'recipient':    'Příjemce',
+      'weight':       'Váha (kg)',
+      'cod':          'Dobírka (Kč)',
     },
   },
 ]

@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import { getUsage } from '@/lib/usage'
@@ -6,7 +6,7 @@ import { formatDateTime } from '@/lib/utils'
 import { Activity, Plug, RefreshCw, TrendingUp } from 'lucide-react'
 
 export default async function DashboardPage() {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) redirect('/sign-in')
 
   const user = await prisma.user.findUnique({

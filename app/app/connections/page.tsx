@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db/prisma'
 import { ConnectionCard } from '@/components/dashboard/connection-card'
@@ -55,10 +55,23 @@ const PLATFORMS = [
     ],
     docsUrl: 'https://docs.packeta.com/api',
   },
+  {
+    id: 'AIRTABLE' as const,
+    name: 'Airtable',
+    desc: 'Propojte Airtable pro projektové řízení, CRM kontakty, inventář a plánování. Dostupné v plánech Pro a Business.',
+    emoji: '📋',
+    color: 'border-yellow-200 bg-yellow-50',
+    badge: 'Pro',
+    fields: [
+      { key: 'accessToken', label: 'Personal Access Token', placeholder: 'pat...', type: 'password' },
+      { key: 'baseId', label: 'Base ID', placeholder: 'app...', type: 'text' },
+    ],
+    docsUrl: 'https://airtable.com/developers/web/api/introduction',
+  },
 ]
 
 export default async function ConnectionsPage() {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) redirect('/sign-in')
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })

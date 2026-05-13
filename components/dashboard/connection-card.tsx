@@ -16,6 +16,7 @@ interface Platform {
   desc: string
   emoji: string
   color: string
+  badge?: string
   fields: PlatformField[]
   docsUrl: string
 }
@@ -87,7 +88,14 @@ export function ConnectionCard({ platform, existing }: ConnectionCardProps) {
         <div className="flex items-center gap-3">
           <span className="text-3xl">{platform.emoji}</span>
           <div>
-            <div className="font-semibold text-gray-900">{platform.name}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">{platform.name}</span>
+              {platform.badge && (
+                <span className="text-xs font-bold px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                  {platform.badge}
+                </span>
+              )}
+            </div>
             {existing ? (
               <div className="flex items-center gap-1.5 mt-0.5">
                 {existing.lastTestOk === true

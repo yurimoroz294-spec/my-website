@@ -1,13 +1,19 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { stripe, createOrRetrieveCustomer, PLANS } from '@/lib/stripe'
 
 export async function POST() {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const clerkUser = await currentUser()
-  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
+  let email = ''
+  try {
+    const { currentUser } = await import('@clerk/nextjs/server')
+    const clerkUser = await currentUser()
+    email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
+  } catch {
+    // Clerk not configured — email stays empty
+  }
 
   const customerId = await createOrRetrieveCustomer(userId, email)
 

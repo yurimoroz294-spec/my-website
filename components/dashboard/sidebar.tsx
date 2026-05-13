@@ -2,9 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { UserButton } from '@clerk/nextjs'
-import { Database, LayoutDashboard, Plug, RefreshCw, CreditCard, Settings } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { Database, LayoutDashboard, Plug, RefreshCw, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const UserButton = dynamic(
+  () => import('@clerk/nextjs').then(m => ({ default: m.UserButton })),
+  { ssr: false, loading: () => <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" /> },
+)
 
 const NAV = [
   { href: '/app',              label: 'Přehled',      icon: LayoutDashboard },

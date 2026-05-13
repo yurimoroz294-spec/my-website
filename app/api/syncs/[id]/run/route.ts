@@ -1,10 +1,10 @@
-import { auth } from '@clerk/nextjs/server'
+import { getAuthUserId } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { runSync } from '@/lib/sync/runner'
 
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
-  const { userId } = auth()
+  const userId = await getAuthUserId()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } })
