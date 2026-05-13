@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -96,7 +97,9 @@ export default function InvoicesPage() {
                         className={`border-b border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors ${selected?.id === inv.id ? 'bg-blue-50' : ''}`}
                       >
                         <td className="px-4 py-3 font-medium text-gray-900 truncate max-w-[140px]">
-                          {inv.supplier_name ?? '–'}
+                          <Link href={`/dashboard/invoices/${inv.id}`} className="hover:text-blue-600" onClick={e => e.stopPropagation()}>
+                            {inv.supplier_name ?? '–'}
+                          </Link>
                         </td>
                         <td className="px-4 py-3 text-gray-500 font-mono text-xs">{inv.invoice_number ?? '–'}</td>
                         <td className="px-4 py-3 text-right font-medium">{formatCZK(inv.amount_total)}</td>

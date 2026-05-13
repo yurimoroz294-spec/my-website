@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const nav = [
   { href: '/dashboard',                    icon: '📊', label: 'Přehled' },
   { href: '/dashboard/invoices',           icon: '🧾', label: 'Faktury' },
+  { href: '/dashboard/logs',               icon: '📋', label: 'Logy' },
   { href: '/dashboard/connections/email',  icon: '📧', label: 'E-mail' },
   { href: '/dashboard/connections/crm',    icon: '🔗', label: 'Účetnictví' },
   { href: '/dashboard/settings',           icon: '⚙️',  label: 'Nastavení' },
