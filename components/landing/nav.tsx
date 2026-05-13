@@ -1,8 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { Database } from 'lucide-react'
+
+// Graceful fallback when Clerk is not configured
+let SignedIn: React.FC<{ children: React.ReactNode }> = () => null
+let SignedOut: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
+let UserButton: React.FC<{ afterSignOutUrl?: string }> = () => null
+
+try {
+  const clerk = require('@clerk/nextjs')
+  SignedIn = clerk.SignedIn
+  SignedOut = clerk.SignedOut
+  UserButton = clerk.UserButton
+} catch {}
+
 
 export function LandingNav() {
   return (

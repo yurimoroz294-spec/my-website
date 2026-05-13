@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] })
@@ -20,12 +19,24 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? ''
+const hasClerk = clerkKey.startsWith('pk_test_') || clerkKey.startsWith('pk_live_')
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  if (hasClerk) {
+    const { ClerkProvider } = await import('@clerk/nextjs')
+    return (
+      <ClerkProvider>
+        <html lang="cs">
+          <body className={inter.className}>{children}</body>
+        </html>
+      </ClerkProvider>
+    )
+  }
+
   return (
-    <ClerkProvider>
-      <html lang="cs">
-        <body className={inter.className}>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="cs">
+      <body className={inter.className}>{children}</body>
+    </html>
   )
 }
