@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto'
 const PostSchema = z.object({
   platform: z.enum([
     'RAYNET', 'SHOPTET', 'POHODA', 'PACKETA', 'AIRTABLE',
-    'MONEY_S3', 'IDOKLAD', 'FAKTUROID', 'ABRA_FLEXI', 'EMAIL_IMAP',
+    'MONEY_S3', 'IDOKLAD', 'FAKTUROID', 'ABRA_FLEXI', 'EMAIL_IMAP', 'GMAIL_OAUTH',
   ]),
   credentials: z.record(z.string()),
 })

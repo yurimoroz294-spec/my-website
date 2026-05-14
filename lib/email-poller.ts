@@ -1,8 +1,10 @@
 import { prisma } from './db/prisma'
 import { getCredentials } from './kv'
 import { fetchUnseenInvoiceAttachments, type ImapCredentials } from './integrations/imap'
+import { GmailClient, type GmailCredentials } from './integrations/gmail'
 import { parseInvoiceFromBase64 } from './ai/mapper'
 import { sendInvoiceToTarget } from './invoice-sender'
+import type { ImapAttachment } from './integrations/imap'
 
 export interface PollResult {
   found: number
@@ -19,14 +21,19 @@ export async function pollUserInbox(userId: string): Promise<PollResult> {
   if (!user) return { found: 0, saved: 0, errors: 0 }
 
   const conn = await prisma.connection.findFirst({
-    where: { userId, platform: 'EMAIL_IMAP', isActive: true },
+    where: { userId, platform: { in: ['EMAIL_IMAP', 'GMAIL_OAUTH'] }, isActive: true },
   })
   if (!conn) return { found: 0, saved: 0, errors: 0 }
 
-  const creds = await getCredentials(conn.kvKey) as ImapCredentials | null
+  const creds = await getCredentials(conn.kvKey)
   if (!creds) return { found: 0, saved: 0, errors: 0 }
 
-  const attachments = await fetchUnseenInvoiceAttachments(creds)
+  let attachments: ImapAttachment[]
+  if (conn.platform === 'GMAIL_OAUTH') {
+    attachments = await new GmailClient(creds as unknown as GmailCredentials).fetchUnseenInvoiceAttachments()
+  } else {
+    attachments = await fetchUnseenInvoiceAttachments(creds as unknown as ImapCredentials)
+  }
 
   let saved = 0
   let errors = 0
@@ -74,7 +81,7 @@ export async function pollUserInbox(userId: string): Promise<PollResult> {
 // Called from the cron job; returns a summary.
 export async function pollAllInboxes(): Promise<{ users: number; found: number; saved: number; errors: number }> {
   const connections = await prisma.connection.findMany({
-    where: { platform: 'EMAIL_IMAP', isActive: true },
+    where: { platform: { in: ['EMAIL_IMAP', 'GMAIL_OAUTH'] }, isActive: true },
     select: { userId: true },
   })
 

@@ -135,6 +135,7 @@ enum Platform {
   FAKTUROID
   ABRA_FLEXI
   EMAIL_IMAP
+  GMAIL_OAUTH
 }
 
 enum Plan {
