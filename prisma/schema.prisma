@@ -9,21 +9,24 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  clerkId       String   @unique
-  email         String   @unique
-  name          String?
-  company       String?
-  ico           String?  // IČO — Czech company registration number
-  dic           String?  // DIČ — Czech VAT number
-  plan          Plan     @default(FREE)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  clerkId            String   @unique
+  email              String   @unique
+  name               String?
+  company            String?
+  ico                String?  // IČO — Czech company registration number
+  dic                String?  // DIČ — Czech VAT number
+  plan               Plan     @default(FREE)
+  inboxToken         String?  @unique // unique token for inbound email address
+  autoSendInvoices   Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   connections   Connection[]
   syncs         Sync[]
   subscription  Subscription?
   usageRecords  UsageRecord[]
+  invoices      Invoice[]
 
   @@map("users")
 }
@@ -154,4 +157,46 @@ enum SubStatus {
   PAST_DUE
   CANCELLED
   TRIALING
+}
+
+model Invoice {
+  id               String        @id @default(cuid())
+  userId           String
+
+  fromEmail        String
+  subject          String?
+  receivedAt       DateTime      @default(now())
+
+  variabilniSymbol String?
+  ico              String?
+  dic              String?
+  company          String?
+  amount           Float?
+  amountWithVat    Float?
+  vatRate          Float?
+  currency         String?       @default("CZK")
+  date             String?       // YYYY-MM-DD
+  dateDue          String?       // YYYY-MM-DD
+  items            Json?         // ParsedInvoice items array
+
+  fileName         String?
+
+  status           InvoiceStatus @default(PENDING)
+  errorMessage     String?
+  sentAt           DateTime?
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PARSED
+  SENT
+  FAILED
 }

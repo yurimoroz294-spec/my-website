@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { Database, LayoutDashboard, Plug, RefreshCw, CreditCard } from 'lucide-react'
+import { Database, LayoutDashboard, Plug, RefreshCw, CreditCard, Inbox } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const UserButton = dynamic(
@@ -12,10 +12,11 @@ const UserButton = dynamic(
 )
 
 const NAV = [
-  { href: '/app',              label: 'Přehled',      icon: LayoutDashboard },
-  { href: '/app/connections',  label: 'Propojení',    icon: Plug },
+  { href: '/app',              label: 'Přehled',       icon: LayoutDashboard },
+  { href: '/app/connections',  label: 'Propojení',     icon: Plug },
   { href: '/app/sync',         label: 'Synchronizace', icon: RefreshCw },
-  { href: '/app/billing',      label: 'Předplatné',   icon: CreditCard },
+  { href: '/app/invoices',     label: 'Faktury',        icon: Inbox },
+  { href: '/app/billing',      label: 'Předplatné',    icon: CreditCard },
 ]
 
 export function DashboardSidebar() {
