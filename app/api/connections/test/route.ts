@@ -11,6 +11,7 @@ import { MoneyS3Client } from '@/lib/integrations/money'
 import { IDokladClient } from '@/lib/integrations/idoklad'
 import { FakturoidClient } from '@/lib/integrations/fakturoid'
 import { AbraFlexiClient } from '@/lib/integrations/abra'
+import { testImapConnection } from '@/lib/integrations/imap'
 
 export async function POST(req: Request) {
   const userId = await getAuthUserId()
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
       case 'IDOKLAD':    ok = await new IDokladClient(creds as any).testConnection(); break
       case 'FAKTUROID':  ok = await new FakturoidClient(creds as any).testConnection(); break
       case 'ABRA_FLEXI': ok = await new AbraFlexiClient(creds as any).testConnection(); break
+      case 'EMAIL_IMAP': ok = await testImapConnection(creds as any); break
     }
   } catch (e) {
     ok = false

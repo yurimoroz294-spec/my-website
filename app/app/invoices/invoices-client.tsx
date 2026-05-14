@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check, Mail, Send, Trash2, RotateCcw, Zap, Settings2 } from 'lucide-react'
+import { Copy, Check, Mail, Send, Trash2, RotateCcw, Zap, Settings2, RefreshCw } from 'lucide-react'
 
 type InvoiceStatus = 'PENDING' | 'PARSED' | 'SENT' | 'FAILED'
 type TargetPlatform = 'POHODA' | 'RAYNET' | 'AIRTABLE' | 'MONEY_S3' | 'IDOKLAD' | 'FAKTUROID' | 'ABRA_FLEXI' | null
@@ -29,6 +29,7 @@ interface Props {
   initialInvoices: Invoice[]
   autoSend: boolean
   targetPlatform: TargetPlatform
+  hasImapConnection: boolean
 }
 
 const STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -61,7 +62,7 @@ function fmt(n: number | null, currency: string | null) {
   return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: currency ?? 'CZK' }).format(n)
 }
 
-export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAutoSend, targetPlatform: initTarget }: Props) {
+export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAutoSend, targetPlatform: initTarget, hasImapConnection }: Props) {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices)
   const [autoSend, setAutoSend] = useState(initAutoSend)
   const [targetPlatform, setTargetPlatform] = useState<TargetPlatform>(initTarget)
@@ -70,6 +71,8 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAuto
   const [deleting, setDeleting] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<string | null>(null)
 
   async function copyEmail() {
     await navigator.clipboard.writeText(inboxEmail)
@@ -128,6 +131,33 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAuto
     }
   }
 
+  async function handleSync() {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res = await fetch('/api/invoices/sync', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setSyncMsg(data.error ?? 'Synchronizace selhala.')
+      } else if (data.saved === 0) {
+        setSyncMsg('Žádné nové faktury.')
+      } else {
+        setSyncMsg(`Nalezeno ${data.saved} nových faktur.`)
+        // Refresh invoice list
+        const listRes = await fetch('/api/invoices')
+        if (listRes.ok) {
+          const listData = await listRes.json()
+          setInvoices(listData.invoices ?? [])
+        }
+      }
+    } catch {
+      setSyncMsg('Chyba sítě.')
+    } finally {
+      setSyncing(false)
+      setTimeout(() => setSyncMsg(null), 5000)
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Opravdu smazat tuto fakturu?')) return
     setDeleting(id)
@@ -144,11 +174,28 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAuto
 
   return (
     <div className="p-6 max-w-5xl">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Inbox faktur</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Přeposílej faktury PDF na svou inbox adresu — AI je přečte a odešle do zvoleného systému.
-        </p>
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Inbox faktur</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Přeposílej faktury PDF na svou inbox adresu nebo propoj e-mailovou schránku — AI je přečte a odešle do zvoleného systému.
+          </p>
+        </div>
+        {hasImapConnection && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {syncMsg && (
+              <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md">{syncMsg}</span>
+            )}
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Synchronizuji…' : 'Synchronizovat'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Inbox email card */}

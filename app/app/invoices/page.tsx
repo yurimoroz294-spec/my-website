@@ -28,15 +28,20 @@ export default async function InvoicesPage() {
     )
   }
 
-  const token = await getOrCreateInboxToken(user.id)
+  const [token, imapConn, invoices] = await Promise.all([
+    getOrCreateInboxToken(user.id),
+    prisma.connection.findFirst({
+      where: { userId: user.id, platform: 'EMAIL_IMAP', isActive: true },
+      select: { id: true },
+    }),
+    prisma.invoice.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    }),
+  ])
+
   const inboxEmail = getInboxEmail(token)
-
-  const invoices = await prisma.invoice.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
-    take: 100,
-  })
-
   // Serialize Date objects to ISO strings for the client component
   const serialized = JSON.parse(JSON.stringify(invoices))
 
@@ -47,6 +52,7 @@ export default async function InvoicesPage() {
       autoSend={user.autoSendInvoices}
       targetPlatform={(user.invoiceTargetPlatform as
         'POHODA' | 'RAYNET' | 'AIRTABLE' | 'MONEY_S3' | 'IDOKLAD' | 'FAKTUROID' | 'ABRA_FLEXI' | null) ?? null}
+      hasImapConnection={!!imapConn}
     />
   )
 }

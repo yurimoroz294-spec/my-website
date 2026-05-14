@@ -121,6 +121,21 @@ const PLATFORMS = [
     ],
     docsUrl: 'https://www.flexibee.eu/api/dokumentace/',
   },
+  {
+    id: 'EMAIL_IMAP' as const,
+    name: 'E-mailová schránka (IMAP)',
+    desc: 'Propojte emailovou schránku, kam chodí faktury. Systém ji automaticky kontroluje a zpracovává přílohy. Funguje s Gmail, Seznam, Outlook i firemní poštou.',
+    emoji: '📬',
+    color: 'border-teal-200 bg-teal-50',
+    badge: 'Pro',
+    fields: [
+      { key: 'host', label: 'IMAP server', placeholder: 'imap.gmail.com', type: 'text' },
+      { key: 'port', label: 'Port', placeholder: '993', type: 'text' },
+      { key: 'user', label: 'E-mail', placeholder: 'faktury@firma.cz', type: 'text' },
+      { key: 'password', label: 'Heslo / App heslo', placeholder: '••••••••', type: 'password' },
+      { key: 'folder', label: 'Složka (volitelné)', placeholder: 'INBOX', type: 'text' },
+    ],
+  },
 ]
 
 export default async function ConnectionsPage() {

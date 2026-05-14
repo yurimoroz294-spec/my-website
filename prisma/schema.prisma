@@ -134,6 +134,7 @@ enum Platform {
   IDOKLAD
   FAKTUROID
   ABRA_FLEXI
+  EMAIL_IMAP
 }
 
 enum Plan {

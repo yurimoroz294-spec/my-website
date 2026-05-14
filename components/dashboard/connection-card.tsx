@@ -18,7 +18,7 @@ interface Platform {
   color: string
   badge?: string
   fields: PlatformField[]
-  docsUrl: string
+  docsUrl?: string
 }
 
 interface ConnectionCardProps {
@@ -112,10 +112,12 @@ export function ConnectionCard({ platform, existing }: ConnectionCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <a href={platform.docsUrl} target="_blank" rel="noopener noreferrer"
-            className="text-gray-400 hover:text-gray-600 transition-colors">
-            <ExternalLink className="h-4 w-4" />
-          </a>
+          {platform.docsUrl && (
+            <a href={platform.docsUrl} target="_blank" rel="noopener noreferrer"
+              className="text-gray-400 hover:text-gray-600 transition-colors">
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
           {existing && (
             <button onClick={handleDelete} className="text-gray-400 hover:text-red-500 transition-colors">
               <Trash2 className="h-4 w-4" />

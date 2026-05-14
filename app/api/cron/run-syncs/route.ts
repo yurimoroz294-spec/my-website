@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { prisma } from '@/lib/db/prisma'
 import { runSync } from '@/lib/sync/runner'
+import { pollAllInboxes } from '@/lib/email-poller'
 
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a)
@@ -35,14 +36,18 @@ export async function GET(req: Request) {
     take: 50,
   })
 
-  const results = await Promise.allSettled(
-    dueSyncs.map(sync => runSync(sync.id))
-  )
+  const [syncResults, emailPoll] = await Promise.all([
+    Promise.allSettled(dueSyncs.map(sync => runSync(sync.id))),
+    pollAllInboxes().catch(() => ({ users: 0, found: 0, saved: 0, errors: 0 })),
+  ])
 
   const summary = {
-    total: dueSyncs.length,
-    success: results.filter(r => r.status === 'fulfilled' && r.value.status === 'SUCCESS').length,
-    failed: results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status === 'FAILED')).length,
+    syncs: {
+      total: dueSyncs.length,
+      success: syncResults.filter(r => r.status === 'fulfilled' && r.value.status === 'SUCCESS').length,
+      failed: syncResults.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status === 'FAILED')).length,
+    },
+    emailPoll,
     timestamp: now.toISOString(),
   }
 
