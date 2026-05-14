@@ -106,16 +106,38 @@ function requireFields(invoice: Invoice) {
   if (invoice.amountWithVat == null) throw new Error('Chybí částka s DPH.')
 }
 
+function safeNum(v: unknown, fallback: number): number {
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
+
 function toItems(invoice: Invoice) {
   const arr = invoice.items as any[] | null | undefined
-  if (!arr || !Array.isArray(arr)) return []
-  return arr.map(it => ({
-    text: String(it.description ?? it.text ?? 'Položka'),
-    quantity: Number(it.quantity ?? 1),
-    unitPrice: Number(it.unitPrice ?? 0),
-    vatRate: Number(it.vatRate ?? invoice.vatRate ?? 21),
-    total: Number(it.total ?? (Number(it.quantity ?? 1) * Number(it.unitPrice ?? 0))),
-  }))
+  if (!arr || !Array.isArray(arr) || arr.length === 0) return []
+  return arr.map(it => {
+    const qty = safeNum(it.quantity, 1)
+    const price = safeNum(it.unitPrice, 0)
+    return {
+      text: String(it.description ?? it.text ?? 'Položka'),
+      quantity: qty,
+      unitPrice: price,
+      vatRate: safeNum(it.vatRate ?? invoice.vatRate, 21),
+      total: safeNum(it.total, qty * price),
+    }
+  })
+}
+
+// Returns at least one fallback item — for APIs that reject header-only invoices.
+function toItemsOrFallback(invoice: Invoice): ReturnType<typeof toItems> {
+  const items = toItems(invoice)
+  if (items.length > 0) return items
+  return [{
+    text: `Faktura ${invoice.variabilniSymbol ?? ''}`.trim(),
+    quantity: 1,
+    unitPrice: invoice.amount ?? 0,
+    vatRate: invoice.vatRate ?? 21,
+    total: invoice.amount ?? 0,
+  }]
 }
 
 async function routeToPohoda(invoice: Invoice, creds: PohodaCredentials) {
@@ -204,7 +226,7 @@ async function routeToMoneyS3(invoice: Invoice, creds: MoneyS3Credentials) {
     amountWithVat: invoice.amountWithVat!,
     vatRate: invoice.vatRate ?? 21,
     currency: invoice.currency ?? 'CZK',
-    items: toItems(invoice),
+    items: toItemsOrFallback(invoice), // Money S3 may reject invoices without line items
   })
 }
 
@@ -222,6 +244,7 @@ async function routeToIDoklad(invoice: Invoice, creds: IDokladCredentials) {
     amountWithVat: invoice.amountWithVat!,
     vatRate: invoice.vatRate ?? 21,
     currency: invoice.currency ?? 'CZK',
+    // iDoklad builds fallback item internally when items array is empty
     items: toItems(invoice).map(i => ({ text: i.text, quantity: i.quantity, unitPrice: i.unitPrice, vatRate: i.vatRate })),
   })
 }
@@ -240,6 +263,7 @@ async function routeToFakturoid(invoice: Invoice, creds: FakturoidCredentials) {
     amountWithVat: invoice.amountWithVat!,
     vatRate: invoice.vatRate ?? 21,
     currency: invoice.currency ?? 'CZK',
+    // Fakturoid builds fallback item internally when items array is empty
     items: toItems(invoice).map(i => ({ text: i.text, quantity: i.quantity, unitPrice: i.unitPrice, vatRate: i.vatRate })),
   })
 }
@@ -258,6 +282,6 @@ async function routeToAbraFlexi(invoice: Invoice, creds: AbraFlexiCredentials) {
     amountWithVat: invoice.amountWithVat!,
     vatRate: invoice.vatRate ?? 21,
     currency: invoice.currency ?? 'CZK',
-    items: toItems(invoice).map(i => ({ text: i.text, quantity: i.quantity, unitPrice: i.unitPrice, vatRate: i.vatRate })),
+    items: toItemsOrFallback(invoice).map(i => ({ text: i.text, quantity: i.quantity, unitPrice: i.unitPrice, vatRate: i.vatRate })),
   })
 }

@@ -69,6 +69,7 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAuto
   const [sending, setSending] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   async function copyEmail() {
     await navigator.clipboard.writeText(inboxEmail)
@@ -76,28 +77,41 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAuto
     setTimeout(() => setCopied(false), 2000)
   }
 
-  async function saveSetting(patch: { autoSendInvoices?: boolean; invoiceTargetPlatform?: TargetPlatform }) {
+  async function saveSetting(
+    patch: { autoSendInvoices?: boolean; invoiceTargetPlatform?: TargetPlatform },
+    rollback: () => void,
+  ) {
     setSaving(true)
+    setSaveError(null)
     try {
-      await fetch('/api/invoices', {
+      const res = await fetch('/api/invoices', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch),
       })
+      if (!res.ok) {
+        rollback()
+        setSaveError('Nepodařilo se uložit nastavení. Zkuste to znovu.')
+      }
+    } catch {
+      rollback()
+      setSaveError('Chyba sítě. Zkontrolujte připojení a zkuste to znovu.')
     } finally {
       setSaving(false)
     }
   }
 
   async function handleAutoSendToggle() {
-    const next = !autoSend
+    const prev = autoSend
+    const next = !prev
     setAutoSend(next)
-    await saveSetting({ autoSendInvoices: next })
+    await saveSetting({ autoSendInvoices: next }, () => setAutoSend(prev))
   }
 
   async function handleTargetChange(value: TargetPlatform) {
+    const prev = targetPlatform
     setTargetPlatform(value)
-    await saveSetting({ invoiceTargetPlatform: value })
+    await saveSetting({ invoiceTargetPlatform: value }, () => setTargetPlatform(prev))
   }
 
   async function handleSend(id: string) {
@@ -226,6 +240,12 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAuto
           </div>
         </div>
       </div>
+
+      {saveError && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {saveError}
+        </div>
+      )}
 
       {/* Invoice list */}
       {invoices.length === 0 ? (

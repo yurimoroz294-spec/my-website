@@ -121,6 +121,8 @@ export class FakturoidClient {
       throw new Error(`Fakturoid createSubject ${res.status}: ${err}`)
     }
     const json = await res.json()
-    return json.id
+    const id = Number(json?.id)
+    if (!Number.isFinite(id) || id <= 0) throw new Error('Fakturoid vrátil neplatné ID subjektu.')
+    return id
   }
 }

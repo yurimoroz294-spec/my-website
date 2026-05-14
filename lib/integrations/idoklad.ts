@@ -110,8 +110,10 @@ export class IDokladClient {
     })
     if (!res.ok) throw new Error(`iDoklad token error: ${res.status}`)
     const data = await res.json()
+    if (!data.access_token) throw new Error('iDoklad vrátil prázdný access token. Zkontrolujte Client ID a Client Secret.')
     this.accessToken = data.access_token
-    this.tokenExpiresAt = Date.now() + (data.expires_in ?? 3600) * 1000
+    const expiresIn = Math.min(Math.max(Number(data.expires_in) || 3600, 60), 86400)
+    this.tokenExpiresAt = Date.now() + expiresIn * 1000
   }
 
   // iDoklad VAT rate enum: 0=basic(21), 1=reduced1(12/15), 2=reduced2(10), 3=zero
