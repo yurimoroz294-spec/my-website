@@ -6,7 +6,10 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 
 const PostSchema = z.object({
-  platform: z.enum(['RAYNET', 'SHOPTET', 'POHODA', 'PACKETA', 'AIRTABLE']),
+  platform: z.enum([
+    'RAYNET', 'SHOPTET', 'POHODA', 'PACKETA', 'AIRTABLE',
+    'MONEY_S3', 'IDOKLAD', 'FAKTUROID', 'ABRA_FLEXI',
+  ]),
   credentials: z.record(z.string()),
 })
 

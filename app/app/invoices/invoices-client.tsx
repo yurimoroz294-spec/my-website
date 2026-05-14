@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Copy, Check, Mail, Send, Trash2, RotateCcw, Zap, Settings2 } from 'lucide-react'
 
 type InvoiceStatus = 'PENDING' | 'PARSED' | 'SENT' | 'FAILED'
-type TargetPlatform = 'POHODA' | 'RAYNET' | 'AIRTABLE' | null
+type TargetPlatform = 'POHODA' | 'RAYNET' | 'AIRTABLE' | 'MONEY_S3' | 'IDOKLAD' | 'FAKTUROID' | 'ABRA_FLEXI' | null
 
 interface Invoice {
   id: string
@@ -46,10 +46,14 @@ const STATUS_COLORS: Record<InvoiceStatus, string> = {
 }
 
 const PLATFORM_OPTIONS: { value: TargetPlatform; label: string; desc: string }[] = [
-  { value: null,       label: 'Nevybráno',   desc: 'Pouze ruční odesílání' },
-  { value: 'POHODA',  label: 'Pohoda',       desc: 'Vytvoří vydanou fakturu v Pohoda mServeru' },
-  { value: 'RAYNET',  label: 'RAYNET CRM',   desc: 'Vytvoří fakturu a spáruje firmu podle IČO' },
-  { value: 'AIRTABLE', label: 'Airtable',    desc: 'Přidá řádek do tabulky "Faktury" ve vašem Base' },
+  { value: null,         label: 'Nevybráno',         desc: 'Pouze ruční odesílání' },
+  { value: 'POHODA',     label: 'Pohoda',            desc: 'Vytvoří vydanou fakturu v Pohoda mServeru' },
+  { value: 'MONEY_S3',   label: 'Money S3',          desc: 'Vytvoří fakturu v Money S3 přes mServer XML' },
+  { value: 'IDOKLAD',    label: 'iDoklad',           desc: 'Vytvoří vydanou fakturu v cloudu iDoklad' },
+  { value: 'FAKTUROID',  label: 'Fakturoid',         desc: 'Vytvoří fakturu a subjekt v Fakturoidu' },
+  { value: 'ABRA_FLEXI', label: 'ABRA Flexi',        desc: 'Vytvoří fakturu-vydanou v ABRA Flexi' },
+  { value: 'RAYNET',     label: 'RAYNET CRM',        desc: 'Vytvoří fakturu a spáruje firmu podle IČO' },
+  { value: 'AIRTABLE',   label: 'Airtable',          desc: 'Přidá řádek do tabulky "Faktury" ve vašem Base' },
 ]
 
 function fmt(n: number | null, currency: string | null) {

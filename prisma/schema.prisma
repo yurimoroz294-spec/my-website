@@ -130,6 +130,10 @@ enum Platform {
   POHODA
   PACKETA
   AIRTABLE
+  MONEY_S3
+  IDOKLAD
+  FAKTUROID
+  ABRA_FLEXI
 }
 
 enum Plan {

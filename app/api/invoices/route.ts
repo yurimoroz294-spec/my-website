@@ -23,7 +23,7 @@ export async function GET() {
   })
 }
 
-const INVOICE_TARGETS = ['POHODA', 'RAYNET', 'AIRTABLE'] as const
+const INVOICE_TARGETS = ['POHODA', 'RAYNET', 'AIRTABLE', 'MONEY_S3', 'IDOKLAD', 'FAKTUROID', 'ABRA_FLEXI'] as const
 type InvoiceTarget = typeof INVOICE_TARGETS[number]
 
 const patchSchema = z.object({

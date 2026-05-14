@@ -45,7 +45,8 @@ export default async function InvoicesPage() {
       inboxEmail={inboxEmail}
       initialInvoices={serialized}
       autoSend={user.autoSendInvoices}
-      targetPlatform={(user.invoiceTargetPlatform as 'POHODA' | 'RAYNET' | 'AIRTABLE' | null) ?? null}
+      targetPlatform={(user.invoiceTargetPlatform as
+        'POHODA' | 'RAYNET' | 'AIRTABLE' | 'MONEY_S3' | 'IDOKLAD' | 'FAKTUROID' | 'ABRA_FLEXI' | null) ?? null}
     />
   )
 }
