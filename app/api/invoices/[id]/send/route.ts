@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthUserId } from '@/lib/auth'
 import { prisma } from '@/lib/db/prisma'
-import { getCredentials } from '@/lib/kv'
-import { PohodaClient } from '@/lib/integrations/pohoda'
+import { sendInvoiceToTarget } from '@/lib/invoice-sender'
 
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   const clerkId = await getAuthUserId()
@@ -24,59 +23,23 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: 'Faktura již byla odeslána.' }, { status: 409 })
   }
 
-  if (!invoice.variabilniSymbol || !invoice.date || !invoice.dateDue || invoice.amount == null || invoice.amountWithVat == null) {
+  if (!user.invoiceTargetPlatform) {
     return NextResponse.json(
-      { error: 'Faktura nemá všechna povinná pole (variabilní symbol, datum, částka).' },
+      { error: 'Není nastaven cílový systém. Vyberte ho v záložce Faktury → Nastavení.' },
       { status: 422 }
     )
   }
 
-  const connection = await prisma.connection.findFirst({
-    where: { userId: user.id, platform: 'POHODA', isActive: true },
-  })
-  if (!connection) {
-    return NextResponse.json({ error: 'Nemáte aktivní Pohoda propojení.' }, { status: 422 })
-  }
-
-  const creds = await getCredentials(connection.kvKey)
-  if (!creds) {
-    return NextResponse.json({ error: 'Nepodařilo se načíst přihlašovací údaje Pohoda.' }, { status: 500 })
-  }
-
-  const client = new PohodaClient({
-    url: creds.url,
-    username: creds.username,
-    password: creds.password,
-    ico: creds.ico,
-  })
-
   try {
-    await client.createInvoice({
-      variabilniSymbol: invoice.variabilniSymbol,
-      ico: invoice.ico ?? undefined,
-      dic: invoice.dic ?? undefined,
-      company: invoice.company ?? undefined,
-      date: invoice.date,
-      dateDue: invoice.dateDue,
-      amount: invoice.amount,
-      amountWithVat: invoice.amountWithVat,
-      vatRate: invoice.vatRate ?? 21,
-      currency: invoice.currency ?? 'CZK',
-      items: (invoice.items as any[]) ?? [],
-    })
-
-    const updated = await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: { status: 'SENT', sentAt: new Date(), errorMessage: null },
-    })
-
+    await sendInvoiceToTarget(invoice.id, user.id)
+    const updated = await prisma.invoice.findUnique({ where: { id: invoice.id } })
     return NextResponse.json({ invoice: updated })
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'unknown error'
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: { status: 'FAILED', errorMessage: `Pohoda chyba: ${msg}` },
-    })
-    return NextResponse.json({ error: `Pohoda chyba: ${msg}` }, { status: 502 })
+    // sendInvoiceToTarget already updated invoice status to FAILED in DB
+    const updated = await prisma.invoice.findUnique({ where: { id: invoice.id } })
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : 'Chyba při odesílání', invoice: updated },
+      { status: 502 }
+    )
   }
 }

@@ -17,8 +17,9 @@ model User {
   ico                String?  // IČO — Czech company registration number
   dic                String?  // DIČ — Czech VAT number
   plan               Plan     @default(FREE)
-  inboxToken         String?  @unique // unique token for inbound email address
-  autoSendInvoices   Boolean  @default(false)
+  inboxToken              String?   @unique // unique token for inbound email address
+  autoSendInvoices        Boolean   @default(false)
+  invoiceTargetPlatform   Platform? // which platform receives auto-sent invoices
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

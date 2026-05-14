@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check, Mail, Send, Trash2, RotateCcw, Zap } from 'lucide-react'
+import { Copy, Check, Mail, Send, Trash2, RotateCcw, Zap, Settings2 } from 'lucide-react'
 
 type InvoiceStatus = 'PENDING' | 'PARSED' | 'SENT' | 'FAILED'
+type TargetPlatform = 'POHODA' | 'RAYNET' | 'AIRTABLE' | null
 
 interface Invoice {
   id: string
@@ -27,6 +28,7 @@ interface Props {
   inboxEmail: string
   initialInvoices: Invoice[]
   autoSend: boolean
+  targetPlatform: TargetPlatform
 }
 
 const STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -43,18 +45,26 @@ const STATUS_COLORS: Record<InvoiceStatus, string> = {
   FAILED: 'bg-red-100 text-red-700',
 }
 
+const PLATFORM_OPTIONS: { value: TargetPlatform; label: string; desc: string }[] = [
+  { value: null,       label: 'Nevybráno',   desc: 'Pouze ruční odesílání' },
+  { value: 'POHODA',  label: 'Pohoda',       desc: 'Vytvoří vydanou fakturu v Pohoda mServeru' },
+  { value: 'RAYNET',  label: 'RAYNET CRM',   desc: 'Vytvoří fakturu a spáruje firmu podle IČO' },
+  { value: 'AIRTABLE', label: 'Airtable',    desc: 'Přidá řádek do tabulky "Faktury" ve vašem Base' },
+]
+
 function fmt(n: number | null, currency: string | null) {
   if (n == null) return '–'
   return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: currency ?? 'CZK' }).format(n)
 }
 
-export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initialAutoSend }: Props) {
+export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initAutoSend, targetPlatform: initTarget }: Props) {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices)
-  const [autoSend, setAutoSend] = useState(initialAutoSend)
+  const [autoSend, setAutoSend] = useState(initAutoSend)
+  const [targetPlatform, setTargetPlatform] = useState<TargetPlatform>(initTarget)
   const [copied, setCopied] = useState(false)
   const [sending, setSending] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
-  const [toggling, setToggling] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   async function copyEmail() {
     await navigator.clipboard.writeText(inboxEmail)
@@ -62,19 +72,28 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initialA
     setTimeout(() => setCopied(false), 2000)
   }
 
-  async function handleAutoSendToggle() {
-    setToggling(true)
-    const next = !autoSend
+  async function saveSetting(patch: { autoSendInvoices?: boolean; invoiceTargetPlatform?: TargetPlatform }) {
+    setSaving(true)
     try {
-      const res = await fetch('/api/invoices', {
+      await fetch('/api/invoices', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ autoSendInvoices: next }),
+        body: JSON.stringify(patch),
       })
-      if (res.ok) setAutoSend(next)
     } finally {
-      setToggling(false)
+      setSaving(false)
     }
+  }
+
+  async function handleAutoSendToggle() {
+    const next = !autoSend
+    setAutoSend(next)
+    await saveSetting({ autoSendInvoices: next })
+  }
+
+  async function handleTargetChange(value: TargetPlatform) {
+    setTargetPlatform(value)
+    await saveSetting({ invoiceTargetPlatform: value })
   }
 
   async function handleSend(id: string) {
@@ -82,13 +101,10 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initialA
     try {
       const res = await fetch(`/api/invoices/${id}/send`, { method: 'POST' })
       const data = await res.json()
-      if (res.ok) {
-        setInvoices(prev =>
-          prev.map(inv => (inv.id === id ? { ...inv, ...data.invoice } : inv))
-        )
-      } else {
-        alert(data.error ?? 'Chyba při odesílání')
+      if (data.invoice) {
+        setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...data.invoice } : inv))
       }
+      if (!res.ok) alert(data.error ?? 'Chyba při odesílání')
     } finally {
       setSending(null)
     }
@@ -105,28 +121,31 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initialA
     }
   }
 
+  const selectedOption = PLATFORM_OPTIONS.find(o => o.value === targetPlatform) ?? PLATFORM_OPTIONS[0]
+  const canAutoSend = targetPlatform !== null
+
   return (
     <div className="p-6 max-w-5xl">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-gray-900">Inbox faktur</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Přeposílej faktury PDF na svou inbox adresu — AI je přečte a volitelně odešle do Pohody.
+          Přeposílej faktury PDF na svou inbox adresu — AI je přečte a odešle do zvoleného systému.
         </p>
       </div>
 
       {/* Inbox email card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Mail className="h-4 w-4 text-blue-600" />
           <span className="text-sm font-medium text-blue-900">Vaše inbox adresa</span>
         </div>
         <div className="flex items-center gap-3 mt-2">
-          <code className="flex-1 bg-white border border-blue-200 rounded-lg px-4 py-2.5 text-sm font-mono text-gray-800 select-all">
+          <code className="flex-1 bg-white border border-blue-200 rounded-lg px-4 py-2.5 text-sm font-mono text-gray-800 select-all truncate">
             {inboxEmail}
           </code>
           <button
             onClick={copyEmail}
-            className="flex items-center gap-1.5 px-3 py-2.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Zkopírováno' : 'Kopírovat'}
@@ -137,30 +156,71 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initialA
         </p>
       </div>
 
-      {/* Auto-send toggle */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-amber-100 rounded-lg">
-            <Zap className="h-4 w-4 text-amber-600" />
+      {/* Settings row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* Target platform selector */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Settings2 className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-900">Cílový systém</span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900">Automatické odesílání do Pohody</p>
-            <p className="text-xs text-gray-500">Po každém úspěšném parsování okamžitě vytvoří fakturu v Pohoda mServeru.</p>
+          <div className="space-y-2">
+            {PLATFORM_OPTIONS.map(opt => (
+              <label
+                key={String(opt.value)}
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  targetPlatform === opt.value
+                    ? 'border-blue-300 bg-blue-50'
+                    : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="targetPlatform"
+                  checked={targetPlatform === opt.value}
+                  onChange={() => handleTargetChange(opt.value)}
+                  className="mt-0.5 text-blue-600"
+                  disabled={saving}
+                />
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{opt.label}</p>
+                  <p className="text-xs text-gray-500">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
           </div>
         </div>
-        <button
-          onClick={handleAutoSendToggle}
-          disabled={toggling}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-            autoSend ? 'bg-blue-600' : 'bg-gray-200'
-          } ${toggling ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-              autoSend ? 'translate-x-6' : 'translate-x-1'
-            }`}
-          />
-        </button>
+
+        {/* Auto-send toggle */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="h-4 w-4 text-amber-500" />
+            <span className="text-sm font-medium text-gray-900">Automatické odesílání</span>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            Po každém úspěšném parsování okamžitě odešle fakturu do zvoleného systému bez nutnosti ruční akce.
+          </p>
+          <div className="flex items-center justify-between">
+            <span className={`text-sm ${canAutoSend ? 'text-gray-700' : 'text-gray-400'}`}>
+              {canAutoSend
+                ? (autoSend ? `Zapnuto → ${selectedOption.label}` : 'Vypnuto')
+                : 'Nejdříve vyberte cílový systém'}
+            </span>
+            <button
+              onClick={handleAutoSendToggle}
+              disabled={saving || !canAutoSend}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                autoSend && canAutoSend ? 'bg-blue-600' : 'bg-gray-200'
+              } disabled:opacity-40 disabled:cursor-not-allowed`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  autoSend && canAutoSend ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Invoice list */}
@@ -225,15 +285,16 @@ export function InvoicesClient({ inboxEmail, initialInvoices, autoSend: initialA
                   {(inv.status === 'PARSED' || inv.status === 'FAILED') && (
                     <button
                       onClick={() => handleSend(inv.id)}
-                      disabled={sending === inv.id}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                      disabled={sending === inv.id || !targetPlatform}
+                      title={!targetPlatform ? 'Nejdříve vyberte cílový systém' : `Odeslat do ${selectedOption.label}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {sending === inv.id ? (
                         <RotateCcw className="h-3 w-3 animate-spin" />
                       ) : (
                         <Send className="h-3 w-3" />
                       )}
-                      Pohoda
+                      {selectedOption.label}
                     </button>
                   )}
                   <button

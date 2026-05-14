@@ -16,11 +16,19 @@ export async function GET() {
     take: 100,
   })
 
-  return NextResponse.json({ invoices, autoSend: user.autoSendInvoices })
+  return NextResponse.json({
+    invoices,
+    autoSend: user.autoSendInvoices,
+    targetPlatform: user.invoiceTargetPlatform,
+  })
 }
 
+const INVOICE_TARGETS = ['POHODA', 'RAYNET', 'AIRTABLE'] as const
+type InvoiceTarget = typeof INVOICE_TARGETS[number]
+
 const patchSchema = z.object({
-  autoSendInvoices: z.boolean(),
+  autoSendInvoices: z.boolean().optional(),
+  invoiceTargetPlatform: z.enum(INVOICE_TARGETS).nullable().optional(),
 })
 
 export async function PATCH(req: Request) {
@@ -36,7 +44,14 @@ export async function PATCH(req: Request) {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { autoSendInvoices: parsed.data.autoSendInvoices },
+    data: {
+      ...(parsed.data.autoSendInvoices !== undefined && {
+        autoSendInvoices: parsed.data.autoSendInvoices,
+      }),
+      ...(parsed.data.invoiceTargetPlatform !== undefined && {
+        invoiceTargetPlatform: parsed.data.invoiceTargetPlatform,
+      }),
+    },
   })
 
   return NextResponse.json({ ok: true })

@@ -37,7 +37,7 @@ export default async function InvoicesPage() {
     take: 100,
   })
 
-  // Serialize Date objects to ISO strings for client component
+  // Serialize Date objects to ISO strings for the client component
   const serialized = JSON.parse(JSON.stringify(invoices))
 
   return (
@@ -45,6 +45,7 @@ export default async function InvoicesPage() {
       inboxEmail={inboxEmail}
       initialInvoices={serialized}
       autoSend={user.autoSendInvoices}
+      targetPlatform={(user.invoiceTargetPlatform as 'POHODA' | 'RAYNET' | 'AIRTABLE' | null) ?? null}
     />
   )
 }
