@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './http'
+
 export interface PacketaCredentials {
   apiKey: string
   apiPassword: string
@@ -120,7 +122,7 @@ export class PacketaClient {
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>`
 
-    const res = await fetch(`${this.apiUrl}/${method}`, {
+    const res = await fetchWithTimeout(`${this.apiUrl}/${method}`, {
       method: 'POST',
       headers: { 'Content-Type': 'text/xml; charset=utf-8', SOAPAction: method },
       body: soap,

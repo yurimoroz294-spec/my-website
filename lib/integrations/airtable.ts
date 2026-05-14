@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './http'
+
 export interface AirtableCredentials {
   accessToken: string
   baseId: string
@@ -29,7 +31,7 @@ export class AirtableClient {
     path: string,
     body?: unknown,
   ): Promise<T> {
-    const res = await fetch(`${this.baseUrl}/${this.baseId}${path}`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/${this.baseId}${path}`, {
       method,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -49,7 +51,7 @@ export class AirtableClient {
   async testConnection(): Promise<{ ok: boolean; message?: string }> {
     try {
       // List tables in the base via metadata API
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://api.airtable.com/v0/meta/bases/${this.baseId}/tables`,
         {
           headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -112,14 +114,22 @@ export class AirtableClient {
     fields: Record<string, unknown>,
     matchField: string,
   ): Promise<{ record: AirtableRecord; created: boolean }> {
-    const matchValue = fields[matchField]
+    const rawValue = fields[matchField]
+    const matchValue = typeof rawValue === 'string' ? rawValue.trim() : ''
+
+    // No usable match value — always insert a new record (no false dedup on empty)
     if (!matchValue) {
       const record = await this.createRecord(tableId, fields)
       return { record, created: true }
     }
 
-    // Search existing records for a match
-    const filter = encodeURIComponent(`{${matchField}} = "${matchValue}"`)
+    // Escape for Airtable formula context: backslash + double quotes
+    const escaped = matchValue.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+    // Field name itself must not break the formula; reject newlines and braces.
+    if (/[\n\r{}]/.test(matchField)) {
+      throw new Error('Invalid Airtable matchField name')
+    }
+    const filter = encodeURIComponent(`{${matchField}} = "${escaped}"`)
     const existing = await this.request<AirtableListResponse>(
       'GET',
       `/${encodeURIComponent(tableId)}?filterByFormula=${filter}&maxRecords=1`,

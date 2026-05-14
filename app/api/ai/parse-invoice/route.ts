@@ -27,6 +27,15 @@ export async function POST(req: Request) {
     const file = form.get('file') as File | null
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
+    const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json({ error: 'Soubor je příliš velký (max 5 MB)' }, { status: 413 })
+    }
+    const ALLOWED = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp']
+    if (!ALLOWED.includes(file.type)) {
+      return NextResponse.json({ error: 'Nepodporovaný formát souboru' }, { status: 415 })
+    }
+
     const buffer = await file.arrayBuffer()
     const base64 = Buffer.from(buffer).toString('base64')
     const invoice = await parseInvoiceFromBase64(base64, file.type)

@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './http'
+
 export interface RaynetCredentials {
   instanceName: string
   apiKey: string
@@ -55,7 +57,7 @@ export class RaynetClient {
 
   async testConnection(): Promise<boolean> {
     try {
-      const res = await fetch(`${this.baseUrl}/company/?limit=1`, { headers: this.headers })
+      const res = await fetchWithTimeout(`${this.baseUrl}/company/?limit=1`, { headers: this.headers })
       return res.ok
     } catch {
       return false
@@ -63,7 +65,7 @@ export class RaynetClient {
   }
 
   async getCompanies(limit = 100, offset = 0): Promise<RaynetCompany[]> {
-    const res = await fetch(`${this.baseUrl}/company/?limit=${limit}&offset=${offset}`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/company/?limit=${limit}&offset=${offset}`, {
       headers: this.headers,
     })
     if (!res.ok) throw new Error(`RAYNET API error: ${res.status}`)
@@ -72,7 +74,7 @@ export class RaynetClient {
   }
 
   async findCompanyByIco(ico: string): Promise<RaynetCompany | null> {
-    const res = await fetch(`${this.baseUrl}/company/?regNumber=${encodeURIComponent(ico)}`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/company/?regNumber=${encodeURIComponent(ico)}`, {
       headers: this.headers,
     })
     if (!res.ok) return null
@@ -81,7 +83,7 @@ export class RaynetClient {
   }
 
   async createCompany(company: Partial<RaynetCompany>): Promise<RaynetCompany> {
-    const res = await fetch(`${this.baseUrl}/company/`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/company/`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify(company),
@@ -92,7 +94,7 @@ export class RaynetClient {
   }
 
   async createOrder(order: RaynetOrder): Promise<{ id: number }> {
-    const res = await fetch(`${this.baseUrl}/businessCase/`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/businessCase/`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify({
@@ -117,7 +119,7 @@ export class RaynetClient {
     dphRate: number
     dueDate: string
   }): Promise<{ id: number }> {
-    const res = await fetch(`${this.baseUrl}/invoice/`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/invoice/`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify({

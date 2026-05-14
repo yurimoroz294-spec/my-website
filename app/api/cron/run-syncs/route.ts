@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { prisma } from '@/lib/db/prisma'
 import { runSync } from '@/lib/sync/runner'
 
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) return false
+  return timingSafeEqual(bufA, bufB)
+}
+
 // Called by Vercel Cron every 5 minutes
 export async function GET(req: Request) {
-  const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET
+  if (!secret) return NextResponse.json({ error: 'Cron not configured' }, { status: 500 })
+
+  const authHeader = req.headers.get('authorization') ?? ''
+  if (!safeEqual(authHeader, `Bearer ${secret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

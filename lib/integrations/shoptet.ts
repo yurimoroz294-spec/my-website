@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './http'
+
 export interface ShoptetCredentials {
   apiKey: string
   eshopId: string
@@ -57,7 +59,7 @@ export class ShoptetClient {
 
   async testConnection(): Promise<boolean> {
     try {
-      const res = await fetch(`${this.baseUrl}/eshop`, { headers: this.headers })
+      const res = await fetchWithTimeout(`${this.baseUrl}/eshop`, { headers: this.headers })
       return res.ok
     } catch {
       return false
@@ -76,21 +78,21 @@ export class ShoptetClient {
     if (params.status) query.set('statusCode', params.status)
     query.set('page', String(params.page ?? 1))
 
-    const res = await fetch(`${this.baseUrl}/orders?${query}`, { headers: this.headers })
+    const res = await fetchWithTimeout(`${this.baseUrl}/orders?${query}`, { headers: this.headers })
     if (!res.ok) throw new Error(`Shoptet getOrders error: ${res.status}`)
     const data = await res.json()
     return data.data?.orders ?? []
   }
 
   async getOrder(code: string): Promise<ShoptetOrder> {
-    const res = await fetch(`${this.baseUrl}/orders/${code}`, { headers: this.headers })
+    const res = await fetchWithTimeout(`${this.baseUrl}/orders/${code}`, { headers: this.headers })
     if (!res.ok) throw new Error(`Shoptet getOrder error: ${res.status}`)
     const data = await res.json()
     return data.data
   }
 
   async updateOrderStatus(code: string, statusCode: string): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/orders/${code}/status`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/orders/${code}/status`, {
       method: 'PATCH',
       headers: this.headers,
       body: JSON.stringify({ statusCode }),
@@ -99,14 +101,14 @@ export class ShoptetClient {
   }
 
   async getProducts(page = 1): Promise<ShoptetProduct[]> {
-    const res = await fetch(`${this.baseUrl}/products?page=${page}`, { headers: this.headers })
+    const res = await fetchWithTimeout(`${this.baseUrl}/products?page=${page}`, { headers: this.headers })
     if (!res.ok) throw new Error(`Shoptet getProducts error: ${res.status}`)
     const data = await res.json()
     return data.data?.products ?? []
   }
 
   async updateStock(guid: string, quantity: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/products/${guid}/stock`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/products/${guid}/stock`, {
       method: 'PATCH',
       headers: this.headers,
       body: JSON.stringify({ stockQuantity: quantity }),

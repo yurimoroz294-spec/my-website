@@ -1,4 +1,5 @@
 import { parseStringPromise, Builder } from 'xml2js'
+import { fetchWithTimeout } from './http'
 
 export interface PohodaCredentials {
   url: string       // e.g. http://localhost:5336
@@ -50,7 +51,7 @@ export class PohodaClient {
   async testConnection(): Promise<boolean> {
     try {
       const xml = this.buildRequest('dataPack', `<dataPackItem id="1" version="2.0"><accountingUnit><accountingUnitId>${this.ico}</accountingUnitId></accountingUnit></dataPackItem>`)
-      const res = await fetch(this.baseUrl, { method: 'POST', headers: this.headers, body: xml })
+      const res = await fetchWithTimeout(this.baseUrl, { method: 'POST', headers: this.headers, body: xml })
       return res.ok
     } catch {
       return false
@@ -59,7 +60,7 @@ export class PohodaClient {
 
   async getInvoices(params: { dateFrom?: string; dateTo?: string } = {}): Promise<PohodaInvoice[]> {
     const filter = params.dateFrom
-      ? `<filter><selectedCompanyDB><dbId>${this.ico}</dbId></selectedCompanyDB><dateFrom>${params.dateFrom}</dateFrom>${params.dateTo ? `<dateTo>${params.dateTo}</dateTo>` : ''}</filter>`
+      ? `<filter><selectedCompanyDB><dbId>${this.escapeXml(this.ico)}</dbId></selectedCompanyDB><dateFrom>${this.escapeXml(params.dateFrom)}</dateFrom>${params.dateTo ? `<dateTo>${this.escapeXml(params.dateTo)}</dateTo>` : ''}</filter>`
       : ''
 
     const xml = this.buildRequest('dataPack', `
@@ -69,7 +70,7 @@ export class PohodaClient {
         </lst:listInvoice>
       </dataPackItem>`)
 
-    const res = await fetch(this.baseUrl, { method: 'POST', headers: this.headers, body: xml })
+    const res = await fetchWithTimeout(this.baseUrl, { method: 'POST', headers: this.headers, body: xml })
     if (!res.ok) throw new Error(`Pohoda getInvoices error: ${res.status}`)
 
     const text = await res.text()
@@ -80,13 +81,13 @@ export class PohodaClient {
     const itemsXml = invoice.items.map(item => `
       <inv:invoiceItem>
         <inv:text>${this.escapeXml(item.text)}</inv:text>
-        <inv:quantity>${item.quantity}</inv:quantity>
+        <inv:quantity>${this.num(item.quantity)}</inv:quantity>
         <inv:unit>ks</inv:unit>
         <inv:coefficient>1.0</inv:coefficient>
         <inv:homeCurrency>
-          <typ:unitPrice>${item.unitPrice}</typ:unitPrice>
-          <typ:price>${item.total}</typ:price>
-          <typ:vat>${item.vatRate}</typ:vat>
+          <typ:unitPrice>${this.num(item.unitPrice)}</typ:unitPrice>
+          <typ:price>${this.num(item.total)}</typ:price>
+          <typ:vat>${this.num(item.vatRate)}</typ:vat>
         </inv:homeCurrency>
       </inv:invoiceItem>`).join('')
 
@@ -96,18 +97,18 @@ export class PohodaClient {
           <inv:invoiceHeader>
             <inv:invoiceType>issuedInvoice</inv:invoiceType>
             <inv:symVar>${this.escapeXml(invoice.variabilniSymbol)}</inv:symVar>
-            ${invoice.company ? `<inv:partnerIdentity><per:address xmlns:per="http://www.stormware.cz/schema/version_2/personalAddress.xsd"><per:company>${this.escapeXml(invoice.company)}</per:company>${invoice.ico ? `<per:ico>${invoice.ico}</per:ico>` : ''}${invoice.dic ? `<per:dic>${invoice.dic}</per:dic>` : ''}</per:address></per:partnerIdentity>` : ''}
-            <inv:date>${invoice.date}</inv:date>
-            <inv:dateDue>${invoice.dateDue}</inv:dateDue>
+            ${invoice.company ? `<inv:partnerIdentity><per:address xmlns:per="http://www.stormware.cz/schema/version_2/personalAddress.xsd"><per:company>${this.escapeXml(invoice.company)}</per:company>${invoice.ico ? `<per:ico>${this.escapeXml(invoice.ico)}</per:ico>` : ''}${invoice.dic ? `<per:dic>${this.escapeXml(invoice.dic)}</per:dic>` : ''}</per:address></per:partnerIdentity>` : ''}
+            <inv:date>${this.escapeXml(invoice.date)}</inv:date>
+            <inv:dateDue>${this.escapeXml(invoice.dateDue)}</inv:dateDue>
             <inv:homeCurrency>
-              <typ:priceNone xmlns:typ="http://www.stormware.cz/schema/version_2/type.xsd">${invoice.amount}</typ:priceNone>
+              <typ:priceNone xmlns:typ="http://www.stormware.cz/schema/version_2/type.xsd">${this.num(invoice.amount)}</typ:priceNone>
             </inv:homeCurrency>
           </inv:invoiceHeader>
           <inv:invoiceDetail>${itemsXml}</inv:invoiceDetail>
         </inv:invoice>
       </dataPackItem>`)
 
-    const res = await fetch(this.baseUrl, { method: 'POST', headers: this.headers, body: xml })
+    const res = await fetchWithTimeout(this.baseUrl, { method: 'POST', headers: this.headers, body: xml })
     if (!res.ok) throw new Error(`Pohoda createInvoice error: ${res.status}`)
     const text = await res.text()
     const parsed = await parseStringPromise(text)
@@ -117,14 +118,20 @@ export class PohodaClient {
 
   private buildRequest(rootElement: string, content: string): string {
     return `<?xml version="1.0" encoding="UTF-8"?>
-<${rootElement} id="001" ico="${this.ico}" application="CzechDataSync" version="2.0"
+<${rootElement} id="001" ico="${this.escapeXml(this.ico)}" application="CzechDataSync" version="2.0"
   xmlns="http://www.stormware.cz/schema/version_2/data.xsd">
   ${content}
 </${rootElement}>`
   }
 
   private escapeXml(str: string): string {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
+  }
+
+  private num(n: number): string {
+    const v = Number(n)
+    if (!Number.isFinite(v)) throw new Error(`Invalid numeric value: ${n}`)
+    return v.toString()
   }
 
   private async parseInvoices(xml: string): Promise<PohodaInvoice[]> {
