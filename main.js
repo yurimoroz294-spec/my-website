@@ -18,11 +18,39 @@ const navObserver = new IntersectionObserver(entries => {
       if (active) active.style.color = '#fff';
     }
   });
-}, { threshold: 0.4 });
+}, { threshold: 0.3 });
 sections.forEach(s => navObserver.observe(s));
 
-// ── Scroll reveal ────────────────────────────────────────────
+// ── Install tabs ─────────────────────────────────────────────
+document.querySelectorAll('.install-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const id = tab.dataset.tab;
+    document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.install-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(`panel-${id}`)?.classList.add('active');
+  });
+});
+
+// ── Copy code buttons ─────────────────────────────────────────
+const snippets = {
+  shoptet: `<script src="https://cdn.lumachat.cz/widget.js" data-id="VÁŠ_ID"></script>`,
+  web:     `<script src="https://cdn.lumachat.cz/widget.js" data-id="VÁŠ_ID" data-lang="cs" data-theme="dark"></script>`,
+};
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const code = snippets[btn.dataset.code] ?? '';
+    navigator.clipboard?.writeText(code).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Zkopírováno';
+      setTimeout(() => (btn.textContent = orig), 2000);
+    });
+  });
+});
+
+// ── Scroll reveal setup ──────────────────────────────────────
 function addReveal(el, cls = '', delay = '') {
+  if (!el) return;
   el.classList.add('reveal');
   if (cls)   el.classList.add(cls);
   if (delay) el.classList.add(delay);
@@ -30,42 +58,39 @@ function addReveal(el, cls = '', delay = '') {
 
 // Hero
 addReveal(document.querySelector('.hero-badge'));
-addReveal(document.querySelector('.hero-title'), '', 'reveal-delay-1');
-addReveal(document.querySelector('.hero-sub'),   '', 'reveal-delay-2');
+addReveal(document.querySelector('.hero-title'),   '', 'reveal-delay-1');
+addReveal(document.querySelector('.hero-sub'),     '', 'reveal-delay-2');
 addReveal(document.querySelector('.hero-actions'), '', 'reveal-delay-3');
-addReveal(document.querySelector('.hero-stats'),   '', 'reveal-delay-4');
+addReveal(document.querySelector('.hero-trust'),   '', 'reveal-delay-4');
+addReveal(document.querySelector('.hero-mockup'),  'from-right', 'reveal-delay-2');
+addReveal(document.querySelector('.hero-stats-bar'));
 
 // Section headers
 document.querySelectorAll('.section-header').forEach(el => addReveal(el));
 
-// Product cards — left visual, right content (or reversed)
-document.querySelectorAll('.product-card').forEach((card, i) => {
-  const visual   = card.querySelector('.product-visual');
-  const content  = card.querySelector('.product-content');
-  const isReverse = card.classList.contains('reverse');
-  addReveal(visual,  isReverse ? 'from-right' : 'from-left');
-  addReveal(content, isReverse ? 'from-left'  : 'from-right', 'reveal-delay-1');
-  // feature list items stagger
-  content.querySelectorAll('.feature-list li').forEach((li, j) =>
-    addReveal(li, '', `reveal-delay-${Math.min(j + 1, 6)}`)
-  );
-});
+// Feature cards
+document.querySelectorAll('.feature-card').forEach((card, i) =>
+  addReveal(card, 'scale-in', `reveal-delay-${Math.min(i + 1, 5)}`)
+);
 
 // Steps
 document.querySelectorAll('.step').forEach((el, i) =>
   addReveal(el, 'scale-in', `reveal-delay-${i + 1}`)
 );
 
-// Benefit cards
-document.querySelectorAll('.benefit-card').forEach((el, i) =>
-  addReveal(el, 'scale-in', `reveal-delay-${i % 3 + 1}`)
-);
+// Install section
+addReveal(document.querySelector('.install-tabs'));
+addReveal(document.querySelector('.install-panels'), '', 'reveal-delay-1');
+
+// Pricing
+addReveal(document.querySelector('.pricing-card'), 'from-left');
+addReveal(document.querySelector('.pricing-side'), 'from-right', 'reveal-delay-1');
 
 // Contact
 addReveal(document.querySelector('.contact-text'), 'from-left');
 addReveal(document.querySelector('.contact-form'), 'from-right', 'reveal-delay-1');
 
-// Intersection observer that fires the animation
+// ── Intersection observer ─────────────────────────────────────
 const revealObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -73,23 +98,28 @@ const revealObserver = new IntersectionObserver(entries => {
       revealObserver.unobserve(entry.target);
     }
   });
-}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-// Trigger hero immediately (already in view)
-document.querySelectorAll('.hero .reveal').forEach(el => {
-  el.classList.add('visible');
-});
+// Hero elements fire immediately
+document.querySelectorAll('.hero .reveal, .hero-stats-bar .reveal').forEach(el =>
+  el.classList.add('visible')
+);
+// Fire hero badge/title/etc directly since they're in hero
+document.querySelectorAll('.hero-badge, .hero-title, .hero-sub, .hero-actions, .hero-trust, .hero-mockup').forEach(el =>
+  el.classList.add('visible')
+);
+document.querySelector('.hero-stats-bar')?.classList.add('visible');
 
 // Observe everything else
-document.querySelectorAll('.reveal:not(.hero .reveal)').forEach(el =>
-  revealObserver.observe(el)
-);
+document.querySelectorAll('.reveal').forEach(el => {
+  if (!el.classList.contains('visible')) revealObserver.observe(el);
+});
 
-// ── Contact form ─────────────────────────────────────────────
+// ── Contact form ──────────────────────────────────────────────
 document.getElementById('contactForm')?.addEventListener('submit', e => {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
-  btn.textContent = '✓ Request sent!';
+  btn.textContent = '✓ Odesláno! Ozveme se do 24 hodin.';
   btn.style.background = 'linear-gradient(135deg, #10b981, #0ea5e9)';
   btn.disabled = true;
 });

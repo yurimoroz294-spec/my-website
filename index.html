@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexAI — Intelligent Automation Solutions</title>
+  <title>Luma Chat — AI asistent pro váš e-shop</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,272 +14,422 @@
   <!-- NAV -->
   <header class="nav-wrap">
     <nav class="nav container">
-      <a href="#" class="logo">Nex<span>AI</span></a>
+      <a href="#" class="logo">Luma<span>Chat</span></a>
       <ul class="nav-links">
-        <li><a href="#products">Products</a></li>
-        <li><a href="#how-it-works">How it works</a></li>
-        <li><a href="#benefits">Benefits</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li><a href="#funkce">Funkce</a></li>
+        <li><a href="#jak-to-funguje">Jak to funguje</a></li>
+        <li><a href="#instalace">Instalace</a></li>
+        <li><a href="#ceny">Ceny</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
       </ul>
-      <a href="#contact" class="btn btn-primary nav-cta">Get a demo</a>
+      <a href="#kontakt" class="btn btn-primary nav-cta">Začít zdarma</a>
       <button class="hamburger" aria-label="Toggle menu">&#9776;</button>
     </nav>
   </header>
 
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" id="hero">
     <div class="container hero-inner">
-      <div class="hero-badge">AI-Powered Business Automation</div>
-      <h1 class="hero-title">
-        Automate the work.<br />
-        <span class="gradient-text">Amplify the results.</span>
-      </h1>
-      <p class="hero-sub">
-        Modular AI tools that plug into your existing workflows — from customer
-        conversations to invoice processing — so your team focuses on what
-        actually matters.
-      </p>
-      <div class="hero-actions">
-        <a href="#products" class="btn btn-primary">Explore products</a>
-        <a href="#contact" class="btn btn-ghost">Talk to sales &rarr;</a>
+      <div class="hero-text">
+        <div class="hero-badge">AI asistent pro české e-shopy</div>
+        <h1 class="hero-title">
+          Váš e-shop<br />
+          nikdy nespí.<br />
+          <span class="gradient-text">Luma ani ne.</span>
+        </h1>
+        <p class="hero-sub">
+          AI asistent, který za 5 minut nahradí operátora — radí produkty, přijímá reklamace, sleduje zásilky. 24/7 bez přestávky za&nbsp;<strong>349&nbsp;Kč/měsíc</strong>.
+        </p>
+        <div class="hero-actions">
+          <a href="#kontakt" class="btn btn-primary">Vyzkoušet zdarma 14 dní &rarr;</a>
+          <a href="#funkce" class="btn btn-ghost">Jak to funguje</a>
+        </div>
+        <div class="hero-trust">
+          <span class="trust-item">&#10003; Bez kreditní karty</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">&#10003; Instalace za 5 minut</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">&#10003; GDPR compliant, EU hosting</span>
+        </div>
       </div>
-      <div class="hero-stats">
-        <div class="stat"><span class="stat-num">10×</span><span class="stat-label">faster data entry</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">99%</span><span class="stat-label">extraction accuracy</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">customer support</span></div>
+
+      <div class="hero-mockup">
+        <div class="chat-mockup hero-chat">
+          <div class="chat-header">
+            <div class="chat-avatar">L</div>
+            <div>
+              <div class="chat-name">Luma &mdash; SportDoplňky.cz</div>
+              <div class="chat-status"><span class="dot green"></span> Online</div>
+            </div>
+          </div>
+          <div class="chat-messages">
+            <div class="msg msg-user">Hledám protein na hubnutí</div>
+            <div class="msg msg-bot">
+              Ráda pomůžu! &#x1F4AA; Jaká je vaše váha a cílová hmotnost? A jaký máte rozpočet?
+            </div>
+            <div class="msg msg-user">75 kg, chci shodit 10 kg, do 800 Kč</div>
+            <div class="msg msg-bot">
+              Doporučuji <strong>WheySlim Pro 1,5 kg (649 Kč)</strong> — 23 g bílkovin, jen 120 kcal/porci. Na váš cíl ideální.
+              <span class="msg-link">Zobrazit produkt &rarr;</span>
+            </div>
+            <div class="msg msg-bot typing-indicator"><span></span><span></span><span></span></div>
+          </div>
+          <div class="chat-input-bar">
+            <span class="chat-placeholder">Napište zprávu&hellip;</span>
+            <button class="chat-send">&#10148;</button>
+          </div>
+        </div>
+        <div class="hero-mockup-glow"></div>
       </div>
     </div>
+
+    <div class="hero-stats-bar">
+      <div class="container hero-stats">
+        <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">dostupnost</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">5 min</span><span class="stat-label">instalace</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">349 Kč</span><span class="stat-label">za měsíc</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">14 dní</span><span class="stat-label">zdarma</span></div>
+      </div>
+    </div>
+
     <div class="hero-bg-blob blob-1"></div>
     <div class="hero-bg-blob blob-2"></div>
   </section>
 
-  <!-- PRODUCTS -->
-  <section class="products" id="products">
+  <!-- FEATURES -->
+  <section class="features" id="funkce">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Our Products</span>
-        <h2>Two tools. Endless efficiency.</h2>
-        <p>Each product is built to replace repetitive manual work with accurate, instant AI automation.</p>
+        <span class="section-tag">Co Luma umí</span>
+        <h2>Jeden asistent. Pět funkcí.</h2>
+        <p>Luma zvládne vše, co váš zákaznický servis — rychleji, přesněji a bez přestávky.</p>
       </div>
 
-      <!-- Product 1 — AI Chat -->
-      <div class="product-card card-chat">
-        <div class="product-visual">
-          <div class="chat-mockup">
-            <div class="chat-header">
-              <div class="chat-avatar">AI</div>
-              <div>
-                <div class="chat-name">NexAI Assistant</div>
-                <div class="chat-status"><span class="dot green"></span> Online</div>
-              </div>
-            </div>
-            <div class="chat-messages">
-              <div class="msg msg-user">Hi, what are your working hours?</div>
-              <div class="msg msg-bot">We're available 24/7! How can I help you today?</div>
-              <div class="msg msg-user">I'd like to track my order.</div>
-              <div class="msg msg-bot">Sure! Please share your order number and I'll pull it up instantly.</div>
-            </div>
-            <div class="chat-input-bar">
-              <span class="chat-placeholder">Type a message…</span>
-              <button class="chat-send">&#10148;</button>
-            </div>
-          </div>
-        </div>
-        <div class="product-content">
-          <div class="product-tag">AI Chat</div>
-          <h3>Intelligent chat for your website</h3>
-          <p>
-            Deploy a context-aware AI assistant on your website in minutes. It handles
-            FAQs, qualifies leads, books meetings, and escalates complex queries to your
-            team — all without writing a single line of code.
-          </p>
-          <ul class="feature-list">
-            <li><span class="check">✓</span> Trained on your content &amp; knowledge base</li>
-            <li><span class="check">✓</span> Multilingual support out of the box</li>
-            <li><span class="check">✓</span> Seamless CRM &amp; helpdesk integrations</li>
-            <li><span class="check">✓</span> Full conversation analytics dashboard</li>
-            <li><span class="check">✓</span> Human hand-off when needed</li>
-          </ul>
-          <a href="#contact" class="btn btn-primary">Request a demo</a>
-        </div>
-      </div>
+      <div class="features-grid">
 
-      <!-- Product 2 — Invoice Automation -->
-      <div class="product-card card-invoice reverse">
-        <div class="product-visual">
-          <div class="invoice-mockup">
-            <div class="inv-header">
-              <div class="inv-icon">&#128196;</div>
-              <div>
-                <div class="inv-title">Invoice Processing</div>
-                <div class="inv-sub">AI extraction engine</div>
-              </div>
-            </div>
-            <div class="inv-rows">
-              <div class="inv-row">
-                <span class="inv-label">Supplier</span>
-                <span class="inv-value extracted">Acme Corp s.r.o.</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">Invoice No.</span>
-                <span class="inv-value extracted">2024-08751</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">Date</span>
-                <span class="inv-value extracted">10. 05. 2026</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">Total (VAT incl.)</span>
-                <span class="inv-value extracted">48 350 Kč</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">VAT amount</span>
-                <span class="inv-value extracted">8 350 Kč</span>
-              </div>
-            </div>
-            <div class="inv-export-row">
-              <div class="export-chip excel"><span>XLS</span> Export to Excel</div>
-              <div class="export-chip pohoda"><span>P</span> Send to Pohoda</div>
-            </div>
+        <div class="feature-card feature-main">
+          <div class="feature-icon-wrap fi-blue">&#x1F6D2;</div>
+          <h3>Prodává a radí</h3>
+          <p>Zákazník napíše <em>&bdquo;hledám protein na hubnutí&ldquo;</em> — Luma se zeptá na váhu, cíl a rozpočet, doporučí 2–3 produkty z vašeho katalogu s vysvětlením a nabídne doplňky. Funguje jako zkušený prodavač 24/7.</p>
+          <div class="feature-tag-list">
+            <span class="ftag">Import katalogu CSV</span>
+            <span class="ftag">Dotazy na míru</span>
+            <span class="ftag">Upsell a cross-sell</span>
+            <span class="ftag">CZ / SK jazyk</span>
           </div>
         </div>
-        <div class="product-content">
-          <div class="product-tag invoice-tag">Invoice Automation</div>
-          <h3>Extract invoices. Auto-fill Excel &amp; Pohoda.</h3>
-          <p>
-            Stop retyping invoices by hand. Our AI reads PDFs and scanned images,
-            extracts every relevant field, and pushes the data directly into your
-            Excel spreadsheets or Pohoda accounting system — error-free, in seconds.
-          </p>
-          <ul class="feature-list">
-            <li><span class="check check-invoice">✓</span> Supports PDF, JPG, PNG, TIFF &amp; scans</li>
-            <li><span class="check check-invoice">✓</span> Structured export to Excel (.xlsx)</li>
-            <li><span class="check check-invoice">✓</span> Direct Pohoda XML / API integration</li>
-            <li><span class="check check-invoice">✓</span> Duplicate &amp; anomaly detection</li>
-            <li><span class="check check-invoice">✓</span> Batch processing — hundreds at once</li>
-          </ul>
-          <a href="#contact" class="btn btn-invoice">Request a demo</a>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap fi-red">&#x1F6E1;&#xFE0F;</div>
+          <h3>Přijímá reklamace</h3>
+          <p>Zákazník napíše <em>&bdquo;chci reklamovat&ldquo;</em> → Luma okamžitě pošle odkaz na váš reklamační formulář. Žádné zdlouhavé otázky.</p>
+          <div class="feature-tag-list">
+            <span class="ftag">Okamžitá reakce</span>
+            <span class="ftag">Váš formulář</span>
+          </div>
         </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap fi-green">&#x1F4E6;</div>
+          <h3>Sleduje zásilky</h3>
+          <p><em>&bdquo;Kde je moje zásilka?&ldquo;</em> → Luma rozpozná číslo, zjistí přepravce a odpoví kde zásilka je i s odkazem na tracking.</p>
+          <div class="feature-tag-list">
+            <span class="ftag">Zásilkovna</span>
+            <span class="ftag">PPL</span>
+            <span class="ftag">DPD</span>
+            <span class="ftag">Česká pošta</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap fi-violet">&#x1F9E0;</div>
+          <h3>Učí se z vašich dat</h3>
+          <p>Nahrajete katalog produktů (CSV), přidáte FAQ a nastavíte tón komunikace → Luma odpoví přesně jako vy. Čím více konverzací, tím lepší.</p>
+          <div class="feature-tag-list">
+            <span class="ftag">Import CSV</span>
+            <span class="ftag">Vlastní FAQ</span>
+            <span class="ftag">Tón komunikace</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-wrap fi-amber">&#x1F4CA;</div>
+          <h3>Ukazuje výsledky</h3>
+          <p>Dashboard v reálném čase — kolik konverzací proběhlo, kolik Luma vyřešila bez člověka, AI skóre každé odpovědi, prodeje přes chat.</p>
+          <div class="feature-tag-list">
+            <span class="ftag">Live dashboard</span>
+            <span class="ftag">AI skóre</span>
+            <span class="ftag">Prodeje z chatu</span>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
-  <section class="how-it-works" id="how-it-works">
+  <section class="how-it-works" id="jak-to-funguje">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">How it works</span>
-        <h2>Up and running in three steps</h2>
+        <span class="section-tag">Jak to funguje</span>
+        <h2>Od nuly k asistentovi za jeden den</h2>
+        <p>Žádné programování. Žádný složitý onboarding. Jen tři kroky.</p>
       </div>
       <div class="steps-grid">
         <div class="step">
+          <div class="step-icon">&#x1F4CB;</div>
           <div class="step-num">01</div>
-          <h4>Connect</h4>
-          <p>Integrate via our no-code setup wizard or REST API. Plug into your existing tools in under an hour.</p>
+          <h4>Nahrajte data</h4>
+          <p>Importujte katalog produktů (CSV), přidejte FAQ a definujte tón komunikace — formální, přátelský nebo váš vlastní styl.</p>
         </div>
-        <div class="step-arrow">&#8594;</div>
+        <div class="step-arrow">&rarr;</div>
         <div class="step">
+          <div class="step-icon">&#x2699;&#xFE0F;</div>
           <div class="step-num">02</div>
-          <h4>Configure</h4>
-          <p>Feed the AI your documents, knowledge base, or invoice templates. The model adapts to your data.</p>
+          <h4>Nastavte Lumu</h4>
+          <p>Určete co Luma smí řešit, přidejte odkaz na reklamační formulář a nastavte, kdy předat konverzaci živému operátorovi.</p>
         </div>
-        <div class="step-arrow">&#8594;</div>
+        <div class="step-arrow">&rarr;</div>
         <div class="step">
+          <div class="step-icon">&#x1F680;</div>
           <div class="step-num">03</div>
-          <h4>Automate</h4>
-          <p>Watch repetitive tasks disappear. Monitor results in real-time on your analytics dashboard.</p>
+          <h4>Spusťte na webu</h4>
+          <p>Zkopírujte jeden řádek kódu — nebo klikněte 3× v WordPress / Shoptet pluginu. Luma je živě.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- BENEFITS -->
-  <section class="benefits" id="benefits">
+  <!-- INSTALLATION -->
+  <section class="installation" id="instalace">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Why NexAI</span>
-        <h2>Built for businesses that move fast</h2>
+        <span class="section-tag">Instalace za 5 minut</span>
+        <h2>Žádný programátor nepotřebný</h2>
+        <p>Vyberte svou platformu — nebo vložte jeden řádek kódu kamkoli.</p>
       </div>
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <div class="benefit-icon">&#9889;</div>
-          <h4>Instant deployment</h4>
-          <p>Go live in hours, not months. No custom development needed for standard integrations.</p>
+
+      <div class="install-tabs">
+        <button class="install-tab active" data-tab="wordpress">
+          <span class="tab-icon">&#x1F50C;</span> WordPress
+        </button>
+        <button class="install-tab" data-tab="shoptet">
+          <span class="tab-icon">&#x1F6CD;&#xFE0F;</span> Shoptet
+        </button>
+        <button class="install-tab" data-tab="web">
+          <span class="tab-icon">&#x1F310;</span> Jakýkoli web
+        </button>
+      </div>
+
+      <div class="install-panels">
+
+        <div class="install-panel active" id="panel-wordpress">
+          <div class="install-steps-visual">
+            <div class="install-step-item">
+              <div class="install-step-num">1</div>
+              <div class="install-step-text">
+                <strong>Nainstalujte plugin</strong>
+                <span>WordPress &rarr; Pluginy &rarr; Přidat nový &rarr; hledat <em>Luma Chat</em> &rarr; Nainstalovat</span>
+              </div>
+            </div>
+            <div class="install-step-item">
+              <div class="install-step-num">2</div>
+              <div class="install-step-text">
+                <strong>Vložte API klíč</strong>
+                <span>Nastavení &rarr; Luma Chat &rarr; vložte váš klíč z dashboardu</span>
+              </div>
+            </div>
+            <div class="install-step-item">
+              <div class="install-step-num">3</div>
+              <div class="install-step-text">
+                <strong>Aktivujte</strong>
+                <span>Klikněte Aktivovat — Luma se objeví na vašem webu okamžitě</span>
+              </div>
+            </div>
+          </div>
+          <div class="install-badge">
+            <span class="badge-time">&#x23F1; ~3 minuty</span>
+            <span class="badge-code">Bez jediného řádku kódu</span>
+          </div>
         </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#128275;</div>
-          <h4>Enterprise-grade security</h4>
-          <p>Data encrypted at rest and in transit. GDPR compliant. Hosted in EU data centers.</p>
+
+        <div class="install-panel" id="panel-shoptet">
+          <div class="install-steps-visual">
+            <div class="install-step-item">
+              <div class="install-step-num">1</div>
+              <div class="install-step-text">
+                <strong>Přejděte do administrace Shoptetu</strong>
+                <span>Marketingové nástroje &rarr; Měřicí kódy a skripty</span>
+              </div>
+            </div>
+            <div class="install-step-item">
+              <div class="install-step-num">2</div>
+              <div class="install-step-text">
+                <strong>Přidejte skript před &lt;/body&gt;</strong>
+                <span>Zkopírujte řádek níže a vložte do sekce skriptů — hotovo</span>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Shoptet &mdash; vložte do sekce skriptů</span>
+              <button class="copy-btn" data-code="shoptet">Kopírovat</button>
+            </div>
+            <pre><code>&lt;script src="https://cdn.lumachat.cz/widget.js"
+  data-id="<span class="code-highlight">VÁŠ_ID</span>"&gt;&lt;/script&gt;</code></pre>
+          </div>
+          <div class="install-badge">
+            <span class="badge-time">&#x23F1; ~2 minuty</span>
+            <span class="badge-code">1 řádek kódu</span>
+          </div>
         </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#128200;</div>
-          <h4>Measurable ROI</h4>
-          <p>Customers report 60–80% reduction in manual processing time within the first month.</p>
+
+        <div class="install-panel" id="panel-web">
+          <div class="install-steps-visual">
+            <div class="install-step-item">
+              <div class="install-step-num">1</div>
+              <div class="install-step-text">
+                <strong>Zkopírujte skript</strong>
+                <span>Funguje na každém webu — HTML, React, Vue, Next.js, Wix…</span>
+              </div>
+            </div>
+            <div class="install-step-item">
+              <div class="install-step-num">2</div>
+              <div class="install-step-text">
+                <strong>Vložte před &lt;/body&gt;</strong>
+                <span>Luma se načte automaticky a zobrazí chat widget v pravém dolním rohu</span>
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Jakýkoli web &mdash; vložte před &lt;/body&gt;</span>
+              <button class="copy-btn" data-code="web">Kopírovat</button>
+            </div>
+            <pre><code>&lt;script src="https://cdn.lumachat.cz/widget.js"
+  data-id="<span class="code-highlight">VÁŠ_ID</span>"
+  data-lang="cs"
+  data-theme="dark"&gt;&lt;/script&gt;</code></pre>
+          </div>
+          <div class="install-badge">
+            <span class="badge-time">&#x23F1; ~1 minuta</span>
+            <span class="badge-code">Univerzální</span>
+          </div>
         </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#127757;</div>
-          <h4>Czech &amp; Slovak ready</h4>
-          <p>Full support for Czech and Slovak languages, Pohoda accounting, and local invoice formats.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="ceny">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Ceny</span>
+        <h2>Jednoduché ceny. Bez překvapení.</h2>
+        <p>Jeden plán. Vše v ceně. Zrušte kdykoli jedním klikem.</p>
+      </div>
+
+      <div class="pricing-wrap">
+        <div class="pricing-card">
+          <div class="pricing-badge">Nejoblíbenější</div>
+          <div class="pricing-price">
+            <span class="price-amount">349</span>
+            <div class="price-right">
+              <span class="price-currency">Kč</span>
+              <span class="price-per">/měsíc</span>
+            </div>
+          </div>
+          <p class="pricing-sub">nebo 299 Kč/měsíc při ročním předplatném</p>
+          <ul class="pricing-features">
+            <li><span class="pcheck">&#10003;</span> 14 dní zdarma, bez kreditní karty</li>
+            <li><span class="pcheck">&#10003;</span> Neomezené konverzace</li>
+            <li><span class="pcheck">&#10003;</span> Import katalogu produktů (CSV)</li>
+            <li><span class="pcheck">&#10003;</span> Sledování zásilek (Zásilkovna, PPL, DPD, ČP)</li>
+            <li><span class="pcheck">&#10003;</span> Reklamační workflow</li>
+            <li><span class="pcheck">&#10003;</span> WordPress &amp; Shoptet plugin</li>
+            <li><span class="pcheck">&#10003;</span> Dashboard s analytiky v reálném čase</li>
+            <li><span class="pcheck">&#10003;</span> Podpora češtiny a slovenštiny</li>
+            <li><span class="pcheck">&#10003;</span> E-mailová podpora</li>
+          </ul>
+          <a href="#kontakt" class="btn btn-primary full-width">Začít zdarma na 14 dní &rarr;</a>
+          <p class="pricing-note">Zrušení jedním klikem. Žádné smlouvy ani skrytá poplatky.</p>
         </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#128296;</div>
-          <h4>Customizable</h4>
-          <p>Tailor AI behaviour, branding, and output formats to match your exact business rules.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#129309;</div>
-          <h4>Dedicated support</h4>
-          <p>Onboarding specialist, SLA-backed support, and a dedicated account manager from day one.</p>
+
+        <div class="pricing-side">
+          <div class="pricing-faq-item">
+            <h4>&#x2753; Co se stane po 14 dnech?</h4>
+            <p>Pokud chcete pokračovat, předplatné automaticky začne. Pokud ne, jednoduše zrušte — žádný poplatek, žádný závazek.</p>
+          </div>
+          <div class="pricing-faq-item">
+            <h4>&#x1F9E9; Potřebuji technické znalosti?</h4>
+            <p>Ne. WordPress plugin zvládnete za 3 minuty bez kódu. Na Shoptetu je to jeden řádek. S instalací pomůžeme zdarma.</p>
+          </div>
+          <div class="pricing-faq-item">
+            <h4>&#x1F6AB; Co Luma nedělá?</h4>
+            <p>Nediagnostikuje, neradí právně ani medicínsky, nerozhoduje ve složitých situacích — vždy předá konverzaci na živého operátora.</p>
+          </div>
+          <div class="pricing-faq-item">
+            <h4>&#x1F1EA;&#x1F1FA; Kde jsou data uložena?</h4>
+            <p>Výhradně na serverech v EU (Hetzner Německo). GDPR compliant. Vaše data nikdy nepředáváme třetím stranám.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA / CONTACT -->
-  <section class="contact" id="contact">
+  <!-- CONTACT -->
+  <section class="contact" id="kontakt">
     <div class="container contact-inner">
       <div class="contact-text">
-        <span class="section-tag">Get started</span>
-        <h2>Ready to automate your workflow?</h2>
-        <p>Leave your details and our team will reach out within one business day to schedule a personalised demo.</p>
+        <span class="section-tag">Začněte dnes</span>
+        <h2>14 dní zdarma.<br />Bez závazků.</h2>
+        <p>Zanechte e-mail a URL vašeho e-shopu — do 24 hodin vám nastavíme Lumu a pomůžeme s instalací osobně.</p>
         <ul class="contact-perks">
-          <li>&#10003; Free 14-day trial</li>
-          <li>&#10003; No credit card required</li>
-          <li>&#10003; Setup assistance included</li>
+          <li>&#10003; Bez kreditní karty</li>
+          <li>&#10003; Pomoc s instalací zdarma</li>
+          <li>&#10003; Odpovíme do 24 hodin</li>
+          <li>&#10003; GDPR compliant, EU hosting</li>
         </ul>
       </div>
       <form class="contact-form" id="contactForm">
         <div class="form-row">
           <div class="form-group">
-            <label for="name">Full name</label>
+            <label for="name">Vaše jméno</label>
             <input type="text" id="name" placeholder="Jan Novák" required />
           </div>
           <div class="form-group">
-            <label for="company">Company</label>
-            <input type="text" id="company" placeholder="Acme s.r.o." />
+            <label for="company">Název e-shopu</label>
+            <input type="text" id="company" placeholder="SportDoplňky s.r.o." />
           </div>
         </div>
         <div class="form-group">
-          <label for="email">Work email</label>
-          <input type="email" id="email" placeholder="jan@acme.cz" required />
+          <label for="email">Pracovní e-mail</label>
+          <input type="email" id="email" placeholder="jan@mojeshop.cz" required />
         </div>
         <div class="form-group">
-          <label for="product">Product of interest</label>
-          <select id="product">
-            <option value="">Select a product…</option>
-            <option>AI Chat for website</option>
-            <option>Invoice Automation (Excel / Pohoda)</option>
-            <option>Both products</option>
+          <label for="website">URL vašeho e-shopu</label>
+          <input type="url" id="website" placeholder="https://mojeshop.cz" />
+        </div>
+        <div class="form-group">
+          <label for="platform">Platforma e-shopu</label>
+          <select id="platform">
+            <option value="">Vyberte platformu&hellip;</option>
+            <option>WordPress / WooCommerce</option>
+            <option>Shoptet</option>
+            <option>Vlastní web</option>
+            <option>Jiné</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="message">Message (optional)</label>
-          <textarea id="message" rows="3" placeholder="Tell us a bit about your use case…"></textarea>
+          <label for="message">Zpráva (nepovinné)</label>
+          <textarea id="message" rows="3" placeholder="Popište váš e-shop a co od Lumy očekáváte&hellip;"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary full-width">Send request &rarr;</button>
-        <p class="form-note">We respect your privacy. No spam, ever.</p>
+        <button type="submit" class="btn btn-primary full-width">Začít zdarma &rarr;</button>
+        <p class="form-note">Vaše data jsou v bezpečí. GDPR compliant. Žádný spam.</p>
       </form>
     </div>
   </section>
@@ -288,35 +438,38 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <a href="#" class="logo">Nex<span>AI</span></a>
-        <p>AI automation tools built for modern businesses.</p>
+        <a href="#" class="logo">Luma<span>Chat</span></a>
+        <p>AI asistent pro české e-shopy. Prodává, radí a sleduje zásilky 24/7.</p>
+        <p class="footer-hosted">&#x1F1EA;&#x1F1FA; Hostováno v EU &middot; GDPR compliant</p>
       </div>
       <div class="footer-links">
         <div class="footer-col">
-          <h5>Products</h5>
+          <h5>Produkt</h5>
           <ul>
-            <li><a href="#products">AI Chat</a></li>
-            <li><a href="#products">Invoice Automation</a></li>
+            <li><a href="#funkce">Funkce</a></li>
+            <li><a href="#instalace">Instalace</a></li>
+            <li><a href="#ceny">Ceny</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h5>Company</h5>
+          <h5>Platformy</h5>
           <ul>
-            <li><a href="#benefits">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#instalace">WordPress plugin</a></li>
+            <li><a href="#instalace">Shoptet</a></li>
+            <li><a href="#instalace">Jakýkoli web</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h5>Legal</h5>
+          <h5>Právní</h5>
           <ul>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Ochrana osobních dat</a></li>
+            <li><a href="#">Podmínky služby</a></li>
           </ul>
         </div>
       </div>
     </div>
     <div class="footer-bottom container">
-      <span>&copy; 2026 NexAI. All rights reserved.</span>
+      <span>&copy; 2026 LumaChat. Všechna práva vyhrazena.</span>
     </div>
   </footer>
 
