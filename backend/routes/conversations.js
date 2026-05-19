@@ -23,6 +23,17 @@ function resolveShop(req, res) {
     if (shop.plan === 'trial' && shop.trial_ends_at < Math.floor(Date.now() / 1000)) {
       res.status(402).json({ error: 'Trial expired' }); return null;
     }
+
+    // Optional domain whitelist — if configured, reject requests from unlisted origins
+    const cfg = JSON.parse(shop.config || '{}');
+    if (cfg.allowed_domains?.length) {
+      const origin = req.headers.origin || '';
+      const allowed = cfg.allowed_domains.some(d => origin === d || origin.endsWith('.' + d));
+      if (!allowed && origin) {
+        res.status(403).json({ error: 'Domain not allowed' }); return null;
+      }
+    }
+
     return shop;
   }
   // Dashboard path — auth middleware already set req.shop

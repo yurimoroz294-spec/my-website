@@ -18,11 +18,12 @@ router.get('/', auth, (req, res) => {
 
 // PATCH /api/shop/config
 router.patch('/config', auth, (req, res) => {
-  const { tone, complaint_url, name, website_url, operator_prompt } = req.body;
+  const { tone, complaint_url, name, website_url, operator_prompt, allowed_domains } = req.body;
   const cfg = { ...JSON.parse(req.shop.config || '{}') };
   if (tone            !== undefined) cfg.tone             = tone;
   if (complaint_url   !== undefined) cfg.complaint_url    = complaint_url;
   if (operator_prompt !== undefined) cfg.operator_prompt  = operator_prompt;
+  if (Array.isArray(allowed_domains))  cfg.allowed_domains  = allowed_domains;
 
   db.prepare('UPDATE shops SET config = ?, name = COALESCE(?, name), website_url = COALESCE(?, website_url) WHERE id = ?')
     .run(JSON.stringify(cfg), name || null, website_url || null, req.shop.id);

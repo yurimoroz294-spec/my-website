@@ -691,6 +691,11 @@ async function settings() {
     <label>Pokyn pro operátora (při přepojení)</label>
     <textarea id="s-op">${esc(cfg.operator_prompt || '')}</textarea>
   </div>
+  <div class="fg">
+    <label>Povolené domény <span style="font-weight:400;color:var(--muted)">(volitelné — bezpečnostní whitelist)</span></label>
+    <input id="s-domains" value="${esc((cfg.allowed_domains || []).join(', '))}" placeholder="mujshop.cz, www.mujshop.cz" />
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Pokud vyplníte, widget bude fungovat pouze z těchto domén. Oddělte čárkou.</div>
+  </div>
   <button class="btn btn-p" id="save-cfg">Uložit nastavení</button>
 </div>`;
 
@@ -699,12 +704,15 @@ async function settings() {
     btn.disabled = true;
     const alert = document.getElementById('cfg-alert');
     try {
+      const domainsRaw = document.getElementById('s-domains').value;
+      const allowed_domains = domainsRaw.split(',').map(d => d.trim()).filter(Boolean);
       await api('PATCH', '/api/shop/config', {
         name:            document.getElementById('s-name').value,
         website_url:     document.getElementById('s-url').value,
         tone:            document.getElementById('s-tone').value,
         complaint_url:   document.getElementById('s-complaint').value,
         operator_prompt: document.getElementById('s-op').value,
+        allowed_domains,
       });
       alert.innerHTML = `<div class="alert alert-s">Nastavení uloženo ✓</div>`;
       setTimeout(() => { alert.innerHTML = ''; }, 2500);

@@ -12,14 +12,17 @@ app.use(helmet());
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 
-app.use(cors({
+// Dashboard/auth routes — only allow configured origins
+const dashboardCors = cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (server-to-server, curl) and configured origins
     if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
-}));
+});
+
+// Widget routes — allow ALL origins (widget runs on any e-shop domain)
+const widgetCors = cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'] });
 
 // Stripe webhook must receive raw body — mount before express.json()
 app.use('/api/billing/webhook', require('./routes/billing'));
@@ -27,11 +30,11 @@ app.use('/api/billing/webhook', require('./routes/billing'));
 app.use(express.json({ limit: '1mb' }));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/api/auth',          require('./routes/auth'));
-app.use('/api/shop',          auth, require('./routes/shop'));
-app.use('/api/conversations', require('./routes/conversations'));
-app.use('/api/tracking',      require('./routes/trackingRoute'));
-app.use('/api/billing',       auth, require('./routes/billing'));
+app.use('/api/auth',          dashboardCors, require('./routes/auth'));
+app.use('/api/shop',          dashboardCors, auth, require('./routes/shop'));
+app.use('/api/conversations', widgetCors,    require('./routes/conversations'));
+app.use('/api/tracking',      widgetCors,    require('./routes/trackingRoute'));
+app.use('/api/billing',       dashboardCors, auth, require('./routes/billing'));
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', ts: Date.now() }));
