@@ -39,12 +39,15 @@ app.use('/api/billing',       dashboardCors, auth, require('./routes/billing'));
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', ts: Date.now() }));
 
-// ── Static frontend (production) ──────────────────────────────────────────────
-const staticDir = path.join(__dirname, '..', 'public');
-app.use(express.static(staticDir));
+// ── Static files ──────────────────────────────────────────────────────────────
+// Project root: index.html (landing), style.css, main.js
+app.use(express.static(path.join(__dirname, '..')));
+// public/: dashboard.html, widget.js, widget-test.html (served at /, not /public/)
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// SPA fallback: unknown routes → landing page
 app.get('*', (_, res) => {
-  const indexPath = path.join(staticDir, 'index.html');
-  res.sendFile(indexPath, err => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'), err => {
     if (err) res.status(404).json({ error: 'Not found' });
   });
 });

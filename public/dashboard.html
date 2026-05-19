@@ -300,6 +300,7 @@ async function overview() {
   const m = main();
   m.innerHTML = `
 <div class="ph"><h1>Přehled</h1><p>Statistiky posledních 30 dní</p></div>
+<div id="ov-onboarding"></div>
 <div class="stats" id="stats"><div class="loading" style="grid-column:span 4">Načítám…</div></div>
 <div id="ov-charts"></div>
 <div id="ov-bottom"></div>`;
@@ -310,6 +311,40 @@ async function overview() {
     api('GET', '/api/shop').catch(() => S.shop),
   ]);
   if (shop) S.shop = shop;
+
+  // ── Onboarding checklist (shown until all steps done) ──
+  const hasCatalog = (shop?.product_count || 0) > 0;
+  const hasFaq     = (shop?.faq_count     || 0) > 0;
+  const hasConvs   = (dash?.conversations  || 0) > 0;
+  const allDone    = hasCatalog && hasFaq && hasConvs;
+
+  if (!allDone) {
+    const step = (done, label, sub, action, view) => `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)">
+      <div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;
+        background:${done ? '#dcfce7' : '#f3f4f6'};color:${done ? '#166534' : '#9ca3af'};margin-top:1px">
+        ${done ? '✓' : '○'}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:${done ? '400' : '500'};color:${done ? 'var(--muted)' : 'var(--text)'};
+          text-decoration:${done ? 'line-through' : 'none'}">${label}</div>
+        ${!done ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div>` : ''}
+      </div>
+      ${!done ? `<button class="btn btn-s btn-sm" onclick="navigate('${view}')">${action}</button>` : ''}
+    </div>`;
+
+    document.getElementById('ov-onboarding').innerHTML = `
+<div class="card" style="margin-bottom:20px;border-left:3px solid var(--blue)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <div style="font-size:15px;font-weight:600">Nastavení Zapi</div>
+    <div class="badge bg-blue">${[hasCatalog,hasFaq,hasConvs].filter(Boolean).length}/3 hotovo</div>
+  </div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Dokončete tyto kroky pro první zákazníky</div>
+  ${step(hasCatalog, 'Nahrát katalog produktů', 'AI bude znát vaše produkty, ceny a dostupnost', 'Nahrát CSV', 'catalog')}
+  ${step(hasFaq,     'Přidat časté dotazy', 'Odpovědi na typické otázky zákazníků', 'Přidat FAQ', 'faqs')}
+  ${step(hasConvs,   'Vložit widget na web a otestovat', 'Zkopírujte kód níže a vložte ho do svého e-shopu', 'Zobrazit kód ↓', 'overview')}
+</div>`;
+  }
 
   // ── Stat cards ──
   const d = dash || {};
@@ -375,17 +410,27 @@ ${(a.top_questions || []).length ? `
 
   document.getElementById('ov-bottom').innerHTML = `
 <div class="card">
-  <div class="card-title">API klíč & integrace</div>
-  <div class="row">
-    <div class="key-val">${apiKey}</div>
-    <button class="btn btn-s btn-sm" id="copy-key">Kopírovat</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div class="card-title" style="margin:0">Vložení widgetu na web</div>
+    <a href="/widget-test.html?key=${encodeURIComponent(apiKey)}" target="_blank" class="btn btn-s btn-sm">▶ Otestovat widget</a>
   </div>
-  <div style="margin-top:16px">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Vložte do <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">&lt;head&gt;</code> vašeho e-shopu:</div>
-    <div class="code-box">
-      <pre>${embedCode}</pre>
-      <button class="cp" id="copy-embed">Kopírovat</button>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:10px">
+    Vložte tento kód do <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">&lt;head&gt;</code> vašeho e-shopu — stačí jednou, widget se sám načte na každé stránce:
+  </div>
+  <div class="code-box">
+    <pre>${embedCode}</pre>
+    <button class="cp" id="copy-embed">Kopírovat</button>
+  </div>
+  <div style="margin-top:14px">
+    <div style="font-size:13px;font-weight:500;margin-bottom:8px">Váš API klíč:</div>
+    <div class="row">
+      <div class="key-val">${apiKey}</div>
+      <button class="btn btn-s btn-sm" id="copy-key">Kopírovat</button>
     </div>
+  </div>
+  <div style="margin-top:14px;padding:12px;background:#f8f9fc;border-radius:8px;font-size:13px;color:var(--muted)">
+    💡 <strong>WordPress:</strong> vložte do <em>Vzhled → Editor → header.php</em> před <code>&lt;/head&gt;</code> &nbsp;|&nbsp;
+    <strong>Shoptet:</strong> Admin → Šablony → Úpravy HTML/CSS → konec sekce &lt;head&gt;
   </div>
 </div>`;
 
@@ -475,7 +520,13 @@ async function conversations() {
   const { conversations: rows = [], total = 0 } = await api('GET', '/api/shop/conversations?limit=30').catch(() => ({}));
 
   if (!rows.length) {
-    document.getElementById('conv-list').outerHTML = '<div class="empty">Zatím žádné konverzace.</div>';
+    document.getElementById('conv-list').outerHTML = `
+<div class="empty">
+  <div style="font-size:32px;margin-bottom:10px">💬</div>
+  <div style="font-weight:500;margin-bottom:6px">Zatím žádné konverzace</div>
+  <div style="font-size:13px">Vložte widget na váš e-shop — první zprávy zákazníků se zobrazí zde.</div>
+  <button class="btn btn-p btn-sm" style="margin-top:14px" onclick="navigate('overview')">Zobrazit kód widgetu →</button>
+</div>`;
     return;
   }
 
@@ -582,7 +633,16 @@ async function loadProducts() {
   card.innerHTML = '<div class="loading">Načítám…</div>';
   const { products = [], total = 0 } = await api('GET', '/api/shop/products?limit=50').catch(() => ({}));
 
-  if (!total) { card.innerHTML = '<div class="empty">Katalog je prázdný. Nahrajte CSV soubor.</div>'; return; }
+  if (!total) {
+    card.innerHTML = `
+<div class="empty">
+  <div style="font-size:32px;margin-bottom:10px">📦</div>
+  <div style="font-weight:500;margin-bottom:6px">Katalog je prázdný</div>
+  <div style="font-size:13px">Nahrajte CSV soubor výše — AI bude znát vaše produkty, ceny a dostupnost na skladě.</div>
+  <div style="font-size:12px;color:var(--muted);margin-top:8px">Minimálně sloupec <code style="background:#f3f4f6;padding:1px 4px;border-radius:3px">name</code> je povinný. Ostatní jsou volitelné.</div>
+</div>`;
+    return;
+  }
 
   card.innerHTML = `
 <div class="row" style="margin-bottom:12px">
