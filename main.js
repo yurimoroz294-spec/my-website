@@ -34,8 +34,8 @@ document.querySelectorAll('.install-tab').forEach(tab => {
 
 // ── Copy code buttons ─────────────────────────────────────────
 const snippets = {
-  shoptet: `<script src="https://cdn.lumachat.cz/widget.js" data-id="VÁŠ_ID"></script>`,
-  web:     `<script src="https://cdn.lumachat.cz/widget.js" data-id="VÁŠ_ID" data-lang="cs" data-theme="dark"></script>`,
+  shoptet: `<script src="https://cdn.zapi.cz/widget.js" data-id="VÁŠ_ID"></script>`,
+  web:     `<script src="https://cdn.zapi.cz/widget.js" data-id="VÁŠ_ID" data-lang="cs" data-theme="dark"></script>`,
 };
 document.querySelectorAll('.copy-btn').forEach(btn => {
   btn.addEventListener('click', () => {
