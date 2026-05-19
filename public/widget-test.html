@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zapi Widget — test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 80px auto; padding: 0 24px; }
+    h1 { color: #1a1a2e; }
+    p { color: #555; line-height: 1.6; margin-top: 12px; }
+    .info { background: #f1f4fb; border-radius: 10px; padding: 16px; margin-top: 24px; font-size: 14px; }
+    code { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Zapi Widget — testovací stránka</h1>
+  <p>Tato stránka simuluje e-shop kde je vložen Zapi chat widget.</p>
+  <p>Tlačítko chatu naleznete vpravo dole. ↘</p>
+
+  <div class="info">
+    <strong>Widget je vložen tímto kódem:</strong><br><br>
+    <code>&lt;script src="/widget.js" data-api-key="YOUR_KEY" data-greeting="Ahoj! Jak mohu pomoci?"&gt;&lt;/script&gt;</code>
+  </div>
+
+  <p style="margin-top:32px;color:#888;font-size:13px;">
+    Poznámka: AI odpovědi vyžadují platný OpenAI API klíč v <code>.env</code>.
+    Bez něj zobrazí chybová hláška "nastala chyba".
+  </p>
+
+  <!-- Zapi widget -->
+  <script
+    src="/widget.js"
+    data-api-key="REPLACE_WITH_YOUR_API_KEY"
+    data-greeting="Ahoj! Jak vám mohu pomoci s nákupem?"
+  ></script>
+</body>
+</html>
