@@ -870,4 +870,10 @@ p  { color: var(--muted); }
   .contact-form { padding: 24px; }
 
   .footer-inner { grid-template-columns: 1fr; }
+
+  .code-block pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 0.75rem;
+  }
 }
