@@ -144,7 +144,11 @@ tr:hover td{background:#fafbfd}
 .billing-hero .price sup{font-size:22px;vertical-align:top;margin-top:12px}
 .billing-hero .price sub{font-size:16px;font-weight:400;color:var(--muted)}
 
-@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  #charts-grid{grid-template-columns:1fr !important}
+  #charts-grid .card[style*="span 2"]{grid-column:span 1 !important}
+}
 @media(max-width:640px){
   .sidebar{display:none}.main{margin-left:0;padding:18px}
   .stats{grid-template-columns:1fr}
@@ -294,24 +298,78 @@ function renderView() {
 // ── Overview ──────────────────────────────────────────────────────────────────
 async function overview() {
   const m = main();
-  m.innerHTML = `<div class="ph"><h1>Přehled</h1><p>Statistiky posledních 30 dní</p></div>
-<div class="stats" id="stats"><div class="loading">Načítám…</div></div>
+  m.innerHTML = `
+<div class="ph"><h1>Přehled</h1><p>Statistiky posledních 30 dní</p></div>
+<div class="stats" id="stats"><div class="loading" style="grid-column:span 4">Načítám…</div></div>
+<div id="ov-charts"></div>
 <div id="ov-bottom"></div>`;
 
-  const [dash, shop] = await Promise.all([
+  const [dash, analytics, shop] = await Promise.all([
     api('GET', '/api/shop/dashboard').catch(() => null),
+    api('GET', '/api/shop/analytics').catch(() => null),
     api('GET', '/api/shop').catch(() => S.shop),
   ]);
   if (shop) S.shop = shop;
 
+  // ── Stat cards ──
   const d = dash || {};
-  document.getElementById('stats').innerHTML = [
-    { lbl: 'Konverzace', val: d.conversations ?? '—', cls: '' },
-    { lbl: 'Zprávy', val: d.messages ?? '—', cls: '' },
-    { lbl: 'AI skóre', val: d.ai_score != null ? d.ai_score + '%' : '—', cls: 'blue' },
-    { lbl: 'AI vyřešeno', val: d.ai_resolved_pct != null ? d.ai_resolved_pct + '%' : '—', cls: 'blue' },
-  ].map(s => `<div class="stat"><div class="lbl">${s.lbl}</div><div class="val ${s.cls}">${s.val}</div></div>`).join('');
+  const wowPct = analytics?.prev_week > 0
+    ? Math.round(((analytics.week - analytics.prev_week) / analytics.prev_week) * 100)
+    : null;
 
+  document.getElementById('stats').innerHTML = [
+    { lbl: 'Konverzace (30d)', val: d.conversations ?? '—', sub: wowPct != null ? (wowPct >= 0 ? `▲ ${wowPct}% vs. minulý týden` : `▼ ${Math.abs(wowPct)}% vs. minulý týden`) : null, subCls: wowPct >= 0 ? 'green' : 'red' },
+    { lbl: 'Zprávy (30d)',     val: d.messages ?? '—', sub: null },
+    { lbl: 'AI skóre',        val: d.ai_score != null ? d.ai_score + '%' : '—', cls: 'blue', sub: 'průměr odpovědí' },
+    { lbl: 'AI vyřešeno',     val: d.ai_resolved_pct != null ? d.ai_resolved_pct + '%' : '—', cls: 'blue', sub: 'bez přepojení' },
+  ].map(s => `
+<div class="stat">
+  <div class="lbl">${s.lbl}</div>
+  <div class="val ${s.cls || ''}">${s.val}</div>
+  ${s.sub ? `<div style="font-size:11px;margin-top:5px;color:${s.subCls === 'green' ? 'var(--success)' : s.subCls === 'red' ? 'var(--danger)' : 'var(--muted)'}">${s.sub}</div>` : ''}
+</div>`).join('');
+
+  // ── Charts area ──
+  const a = analytics || {};
+
+  document.getElementById('ov-charts').innerHTML = `
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="charts-grid">
+
+  <div class="card" style="grid-column:span 2">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="card-title" style="margin:0">Konverzace za posledních 30 dní</div>
+    </div>
+    ${barChart(a.daily || [])}
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">
+      <span>${(a.daily || []).at(0)?.day?.slice(5) || ''}</span>
+      <span>${(a.daily || []).at(-1)?.day?.slice(5) || ''}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Stav konverzací</div>
+    ${statusChart(a.statuses || [])}
+  </div>
+
+  <div class="card">
+    <div class="card-title">Kvalita odpovědí AI</div>
+    ${scoreDist(a.score_dist || {})}
+  </div>
+
+</div>
+
+${(a.top_questions || []).length ? `
+<div class="card" style="margin-bottom:16px">
+  <div class="card-title">Nejčastější dotazy zákazníků</div>
+  ${(a.top_questions).map((q, i) => `
+  <div style="display:flex;align-items:center;gap:12px;padding:9px 0;${i < a.top_questions.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+    <span style="font-size:12px;font-weight:700;color:var(--blue);width:20px;flex-shrink:0">${i + 1}</span>
+    <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(q.content)}</span>
+    <span class="badge bg-gray">${q.count}×</span>
+  </div>`).join('')}
+</div>` : ''}`;
+
+  // ── Embed & API key ──
   const apiKey = S.shop?.api_key || '—';
   const embedCode = `<script\n  src="${location.origin}/widget.js"\n  data-api-key="${apiKey}"\n  data-greeting="Ahoj! Jak vám mohu pomoci?"\n><\/script>`;
 
@@ -319,20 +377,93 @@ async function overview() {
 <div class="card">
   <div class="card-title">API klíč & integrace</div>
   <div class="row">
-    <div class="key-val" id="api-key-val">${apiKey}</div>
+    <div class="key-val">${apiKey}</div>
     <button class="btn btn-s btn-sm" id="copy-key">Kopírovat</button>
   </div>
-  <div style="margin-top:18px">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Vložte tento kód do <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">&lt;head&gt;</code> vašeho e-shopu:</div>
+  <div style="margin-top:16px">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Vložte do <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">&lt;head&gt;</code> vašeho e-shopu:</div>
     <div class="code-box">
-      <pre id="embed-code">${embedCode}</pre>
+      <pre>${embedCode}</pre>
       <button class="cp" id="copy-embed">Kopírovat</button>
     </div>
   </div>
 </div>`;
 
-  document.getElementById('copy-key').onclick = () => copy(apiKey, 'copy-key');
+  document.getElementById('copy-key').onclick   = () => copy(apiKey, 'copy-key');
   document.getElementById('copy-embed').onclick = () => copy(embedCode.replace(/<\/script>/g, '</script>'), 'copy-embed');
+}
+
+// ── Chart helpers ─────────────────────────────────────────────────────────────
+function barChart(daily) {
+  if (!daily.length) return '<div class="empty" style="padding:20px">Žádná data</div>';
+  const max = Math.max(...daily.map(d => d.count), 1);
+  const W = 680, H = 80, pad = 2;
+  const bw = Math.floor((W - pad * (daily.length - 1)) / daily.length);
+
+  const bars = daily.map((d, i) => {
+    const h = Math.max(Math.round((d.count / max) * H), d.count > 0 ? 3 : 0);
+    const x = i * (bw + pad);
+    const y = H - h;
+    const col = d.count === 0 ? '#e5e7eb' : '#4f6ef7';
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" fill="${col}" rx="2" opacity="${d.count ? 0.85 : 1}"><title>${d.day}: ${d.count}</title></rect>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:80px;display:block">${bars}</svg>`;
+}
+
+function statusChart(statuses) {
+  if (!statuses.length) return '<div class="empty" style="padding:16px">Žádná data</div>';
+  const total = statuses.reduce((s, r) => s + r.count, 0);
+  const colors = { active: '#4f6ef7', resolved: '#22c55e', transferred: '#f59e0b', past_due: '#ef4444' };
+  const labels = { active: 'Aktivní', resolved: 'Vyřešeno', transferred: 'Přepojeno' };
+
+  const bars = statuses.map(r => {
+    const pct = Math.round((r.count / total) * 100);
+    const col = colors[r.status] || '#9ca3af';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${col};flex-shrink:0"></div>
+      <div style="flex:1;font-size:13px">${labels[r.status] || r.status}</div>
+      <div style="width:120px;height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;min-width:40px;text-align:right">${pct}%</div>
+      <div style="font-size:12px;color:var(--muted);min-width:24px;text-align:right">${r.count}</div>
+    </div>`;
+  }).join('');
+
+  return `${bars}<div style="font-size:12px;color:var(--muted);margin-top:6px">Celkem: ${total}</div>`;
+}
+
+function scoreDist(dist) {
+  const total = (dist.low || 0) + (dist.mid || 0) + (dist.good || 0) + (dist.great || 0);
+  if (!total) return '<div class="empty" style="padding:16px">Žádná data</div>';
+
+  const segments = [
+    { key: 'low',   label: '< 70%',  col: '#ef4444' },
+    { key: 'mid',   label: '70–80%', col: '#f59e0b' },
+    { key: 'good',  label: '80–90%', col: '#4f6ef7' },
+    { key: 'great', label: '90%+',   col: '#22c55e' },
+  ];
+
+  // Stacked horizontal bar
+  const stackBar = segments.map(s => {
+    const pct = Math.round(((dist[s.key] || 0) / total) * 100);
+    return pct > 0
+      ? `<div style="width:${pct}%;background:${s.col};height:100%" title="${s.label}: ${dist[s.key]}"></div>`
+      : '';
+  }).join('');
+
+  const legend = segments.map(s => {
+    const pct = Math.round(((dist[s.key] || 0) / total) * 100);
+    return `<div style="display:flex;align-items:center;gap:6px;font-size:12px">
+      <div style="width:9px;height:9px;border-radius:50%;background:${s.col}"></div>
+      ${s.label} <strong>${pct}%</strong>
+    </div>`;
+  }).join('');
+
+  return `
+<div style="height:14px;border-radius:7px;overflow:hidden;display:flex;margin-bottom:14px">${stackBar}</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px">${legend}</div>`;
 }
 
 // ── Conversations ─────────────────────────────────────────────────────────────

@@ -141,4 +141,61 @@ router.get('/dashboard', auth, (req, res) => {
   });
 });
 
+// GET /api/shop/analytics  (rich analytics for dashboard)
+router.get('/analytics', auth, (req, res) => {
+  const id    = req.shop.id;
+  const now   = Math.floor(Date.now() / 1000);
+  const s30   = now - 30 * 24 * 60 * 60;
+  const s7    = now - 7  * 24 * 60 * 60;
+
+  // Daily conversation counts — last 30 days (fill missing days with 0)
+  const dailyRaw = db.prepare(`
+    SELECT date(created_at, 'unixepoch') as day, COUNT(*) as count
+    FROM conversations WHERE shop_id = ? AND created_at > ?
+    GROUP BY day ORDER BY day
+  `).all(id, s30);
+
+  const dailyMap = Object.fromEntries(dailyRaw.map(r => [r.day, r.count]));
+  const daily = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date((now - i * 86400) * 1000).toISOString().slice(0, 10);
+    daily.push({ day: d, count: dailyMap[d] || 0 });
+  }
+
+  // Status breakdown
+  const statuses = db.prepare(`
+    SELECT status, COUNT(*) as count FROM conversations
+    WHERE shop_id = ? AND created_at > ? GROUP BY status
+  `).all(id, s30);
+
+  // AI score distribution (buckets)
+  const scoreRows = db.prepare(`
+    SELECT m.ai_score FROM messages m
+    JOIN conversations c ON c.id = m.conversation_id
+    WHERE c.shop_id = ? AND m.role = 'assistant' AND m.ai_score IS NOT NULL AND m.created_at > ?
+  `).all(id, s30);
+
+  const dist = { low: 0, mid: 0, good: 0, great: 0 };
+  for (const { ai_score } of scoreRows) {
+    if      (ai_score < 0.70) dist.low++;
+    else if (ai_score < 0.80) dist.mid++;
+    else if (ai_score < 0.90) dist.good++;
+    else                      dist.great++;
+  }
+
+  // Top user questions
+  const topQuestions = db.prepare(`
+    SELECT m.content, COUNT(*) as count
+    FROM messages m JOIN conversations c ON c.id = m.conversation_id
+    WHERE c.shop_id = ? AND m.role = 'user' AND m.created_at > ?
+    GROUP BY m.content ORDER BY count DESC LIMIT 8
+  `).all(id, s30);
+
+  // Week-over-week comparison
+  const week    = db.prepare('SELECT COUNT(*) as c FROM conversations WHERE shop_id=? AND created_at>?').get(id, s7).c;
+  const prevWeek = db.prepare('SELECT COUNT(*) as c FROM conversations WHERE shop_id=? AND created_at>? AND created_at<=?').get(id, s30, s7).c;
+
+  res.json({ daily, statuses, score_dist: dist, top_questions: topQuestions, week, prev_week: prevWeek });
+});
+
 module.exports = router;
