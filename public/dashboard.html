@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zapi Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fc;--sidebar:#131624;--blue:#4f6ef7;--blue-d:#3d5ce0;
+  --text:#1a1a2e;--muted:#6b7280;--border:#e5e7eb;--card:#fff;
+  --danger:#ef4444;--success:#22c55e;
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Auth ── */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b0f1a,#131624)}
+.auth-card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.auth-logo{text-align:center;font-size:26px;font-weight:700;margin-bottom:6px}
+.auth-logo span{color:var(--blue)}
+.auth-sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:28px}
+.auth-toggle{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.auth-toggle a{color:var(--blue);cursor:pointer}
+
+/* ── Forms ── */
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:13px;font-weight:500;margin-bottom:5px}
+.fg input,.fg textarea,.fg select{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);
+  border-radius:8px;font-size:14px;color:var(--text);outline:none;
+  transition:border-color .15s;font-family:inherit;background:#fff;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--blue)}
+.fg textarea{resize:vertical;min-height:80px}
+
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.alert-e{background:#fee2e2;color:#b91c1c}
+.alert-s{background:#dcfce7;color:#166534}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 16px;border-radius:8px;font-size:14px;font-weight:500;
+  cursor:pointer;border:none;transition:opacity .15s,transform .1s;text-decoration:none;
+  font-family:inherit;
+}
+.btn:hover{opacity:.9}.btn:active{transform:scale(.98)}.btn:disabled{opacity:.45;cursor:default}
+.btn-p{background:var(--blue);color:#fff}
+.btn-s{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.btn-d{background:var(--danger);color:#fff}
+.btn-full{width:100%}
+.btn-sm{padding:5px 11px;font-size:13px}
+
+/* ── Layout ── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sb-logo{padding:22px 20px 18px;font-size:21px;font-weight:700;color:#fff;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo span{color:var(--blue)}
+.sb-nav{flex:1;padding:10px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.55);
+  cursor:pointer;font-size:14px;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(79,110,247,.15);border-left-color:var(--blue)}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.sb-bottom{padding:14px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-email{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-pill{display:inline-flex;align-items:center;font-size:12px;padding:3px 9px;border-radius:20px;margin-bottom:10px}
+.plan-trial{background:rgba(245,158,11,.2);color:#fbbf24}
+.plan-pro{background:rgba(79,110,247,.2);color:#818cf8}
+.main{margin-left:220px;flex:1;padding:32px;max-width:1080px}
+.ph{margin-bottom:26px}
+.ph h1{font-size:21px;font-weight:600}
+.ph p{font-size:14px;color:var(--muted);margin-top:3px}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card+.card{margin-top:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:14px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat .val{font-size:26px;font-weight:700}
+.stat .val.blue{color:var(--blue)}
+
+/* ── Code box ── */
+.code-box{background:#1a1a2e;border-radius:10px;padding:16px;margin-top:10px;position:relative}
+.code-box pre{color:#a5b4fc;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-all;padding-right:60px}
+.code-box .cp{position:absolute;top:10px;right:10px;background:rgba(79,110,247,.2);color:#a5b4fc;
+  border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;transition:background .15s}
+.code-box .cp:hover{background:rgba(79,110,247,.4)}
+
+/* ── API key row ── */
+.key-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.key-val{flex:1;font-family:monospace;font-size:13px;padding:8px 12px;background:var(--bg);
+  border:1px solid var(--border);border-radius:8px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:9px 13px;font-size:11px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
+td{padding:11px 13px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfd}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:500}
+.bg-green{background:#dcfce7;color:#166534}.bg-yellow{background:#fef9c3;color:#854d0e}
+.bg-red{background:#fee2e2;color:#b91c1c}.bg-blue{background:#dbeafe;color:#1d4ed8}
+.bg-gray{background:#f3f4f6;color:#6b7280}
+
+/* ── Conversations ── */
+.conv-thread{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.msg-row{display:flex;flex-direction:column;gap:3px}
+.msg-role{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase}
+.msg-text{padding:10px 13px;border-radius:10px;font-size:14px;line-height:1.5;max-width:80%}
+.msg-row.user .msg-text{background:#eff2ff;color:#1e3a8a;align-self:flex-end}
+.msg-row.assistant .msg-text{background:#f3f4f6}
+
+/* ── Upload ── */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;
+  color:var(--muted);font-size:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.upload-zone:hover{border-color:var(--blue);background:#f0f3ff}
+.upload-zone input{display:none}
+
+/* ── FAQ items ── */
+.faq-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.faq-row:last-child{border-bottom:none}
+.faq-body{flex:1;min-width:0}
+.faq-q{font-weight:500;font-size:14px}
+.faq-a{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* ── Misc ── */
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mt8{margin-top:8px}.mt14{margin-top:14px}.mt20{margin-top:20px}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);font-size:14px}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.score-bar{display:flex;align-items:center;gap:7px}
+.score-bar .bar{height:4px;width:52px;background:#e5e7eb;border-radius:2px;overflow:hidden}
+.score-bar .fill{height:100%;background:var(--blue);border-radius:2px}
+
+/* ── Billing ── */
+.billing-hero{text-align:center;padding:32px 20px}
+.billing-hero .price{font-size:48px;font-weight:700;color:var(--blue)}
+.billing-hero .price sup{font-size:22px;vertical-align:top;margin-top:12px}
+.billing-hero .price sub{font-size:16px;font-weight:400;color:var(--muted)}
+
+@media(max-width:900px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  #charts-grid{grid-template-columns:1fr !important}
+  #charts-grid .card[style*="span 2"]{grid-column:span 1 !important}
+}
+@media(max-width:640px){
+  .sidebar{display:none}.main{margin-left:0;padding:18px}
+  .stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── State & API ───────────────────────────────────────────────────────────────
+let S = { token: localStorage.getItem('zapi_token'), shop: null, view: 'overview' };
+
+async function api(method, path, body, raw) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', ...(S.token ? { Authorization: 'Bearer ' + S.token } : {}) },
+  };
+  if (body && !(body instanceof FormData)) opts.body = JSON.stringify(body);
+  if (body instanceof FormData) { delete opts.headers['Content-Type']; opts.body = body; }
+  if (raw) return fetch(path, opts);
+  const r = await fetch(path, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data.error || r.status), { status: r.status, data });
+  return data;
+}
+
+// ── Router ────────────────────────────────────────────────────────────────────
+function navigate(view) {
+  S.view = view;
+  location.hash = view;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === view));
+  renderView();
+}
+
+window.addEventListener('hashchange', () => {
+  const h = location.hash.slice(1);
+  if (h && S.shop) navigate(h);
+});
+
+function main() { return document.getElementById('main-content'); }
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function renderAuth(mode = 'login') {
+  document.getElementById('app').innerHTML = `
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Z<span>api</span></div>
+    <div class="auth-sub">${mode === 'login' ? 'Přihlásit se do dashboardu' : 'Vytvořit účet zdarma'}</div>
+    <div id="alert"></div>
+    ${mode === 'register' ? `<div class="fg"><label>Název e-shopu</label><input id="name" placeholder="Můj e-shop" /></div>` : ''}
+    <div class="fg"><label>E-mail</label><input id="email" type="email" placeholder="vas@email.cz" /></div>
+    <div class="fg"><label>Heslo</label><input id="pass" type="password" placeholder="min. 8 znaků" /></div>
+    ${mode === 'register' ? `<div class="fg"><label>Web e-shopu (volitelné)</label><input id="url" placeholder="https://mujshop.cz" /></div>` : ''}
+    <button class="btn btn-p btn-full" id="submit-btn">${mode === 'login' ? 'Přihlásit se' : 'Vytvořit účet'}</button>
+    <div class="auth-toggle">
+      ${mode === 'login'
+        ? 'Ještě nemáte účet? <a id="toggle-auth">Registrovat se</a>'
+        : 'Máte účet? <a id="toggle-auth">Přihlásit se</a>'}
+    </div>
+  </div>
+</div>`;
+
+  const showAlert = (msg, type) => {
+    document.getElementById('alert').innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  };
+
+  document.getElementById('toggle-auth').onclick = () => renderAuth(mode === 'login' ? 'register' : 'login');
+
+  document.getElementById('submit-btn').onclick = async () => {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+      const body = { email: document.getElementById('email').value, password: document.getElementById('pass').value };
+      if (mode === 'register') {
+        body.name = document.getElementById('name').value;
+        body.website_url = document.getElementById('url')?.value;
+      }
+      const data = await api('POST', `/api/auth/${mode}`, body);
+      S.token = data.token; S.shop = data.shop;
+      localStorage.setItem('zapi_token', S.token);
+      renderApp();
+    } catch (e) {
+      showAlert(e.data?.error || 'Chyba připojení', 'e');
+      btn.disabled = false;
+      btn.textContent = mode === 'login' ? 'Přihlásit se' : 'Vytvořit účet';
+    }
+  };
+
+  // Enter key
+  document.getElementById('pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('submit-btn').click();
+  });
+}
+
+// ── App shell ─────────────────────────────────────────────────────────────────
+const NAV = [
+  { id: 'overview',      label: 'Přehled',       icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
+  { id: 'conversations', label: 'Konverzace',     icon: '<path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>' },
+  { id: 'catalog',       label: 'Katalog',        icon: '<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>' },
+  { id: 'faqs',          label: 'FAQ',            icon: '<path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>' },
+  { id: 'settings',      label: 'Nastavení',      icon: '<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>' },
+  { id: 'billing',       label: 'Fakturace',      icon: '<path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>' },
+];
+
+function renderApp() {
+  const shop = S.shop;
+  const plan = shop?.plan || 'trial';
+  const trialDays = shop?.trial_ends_at
+    ? Math.max(0, Math.ceil((shop.trial_ends_at - Date.now() / 1000) / 86400))
+    : 0;
+
+  document.getElementById('app').innerHTML = `
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-logo">Z<span>api</span></div>
+    <nav class="sb-nav">
+      ${NAV.map(n => `
+      <div class="nav-item ${S.view === n.id ? 'active' : ''}" data-view="${n.id}">
+        <svg viewBox="0 0 24 24" fill="currentColor">${n.icon}</svg>${n.label}
+      </div>`).join('')}
+    </nav>
+    <div class="sb-bottom">
+      <div class="sb-email">${shop?.owner_email || ''}</div>
+      <div class="plan-pill ${plan === 'pro' ? 'plan-pro' : 'plan-trial'}">
+        ${plan === 'pro' ? '⚡ Pro' : `Trial — ${trialDays}d`}
+      </div>
+      <button class="btn btn-s btn-sm btn-full" id="logout-btn">Odhlásit se</button>
+    </div>
+  </aside>
+  <main class="main" id="main-content"></main>
+</div>`;
+
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.onclick = () => navigate(el.dataset.view);
+  });
+  document.getElementById('logout-btn').onclick = logout;
+  renderView();
+}
+
+function logout() {
+  S.token = null; S.shop = null;
+  localStorage.removeItem('zapi_token');
+  renderAuth();
+}
+
+// ── Views ─────────────────────────────────────────────────────────────────────
+function renderView() {
+  const views = { overview, conversations, catalog, faqs, settings, billing };
+  (views[S.view] || overview)();
+}
+
+// ── Overview ──────────────────────────────────────────────────────────────────
+async function overview() {
+  const m = main();
+  m.innerHTML = `
+<div class="ph"><h1>Přehled</h1><p>Statistiky posledních 30 dní</p></div>
+<div id="ov-onboarding"></div>
+<div class="stats" id="stats"><div class="loading" style="grid-column:span 4">Načítám…</div></div>
+<div id="ov-charts"></div>
+<div id="ov-bottom"></div>`;
+
+  const [dash, analytics, shop] = await Promise.all([
+    api('GET', '/api/shop/dashboard').catch(() => null),
+    api('GET', '/api/shop/analytics').catch(() => null),
+    api('GET', '/api/shop').catch(() => S.shop),
+  ]);
+  if (shop) S.shop = shop;
+
+  // ── Onboarding checklist (shown until all steps done) ──
+  const hasCatalog = (shop?.product_count || 0) > 0;
+  const hasFaq     = (shop?.faq_count     || 0) > 0;
+  const hasConvs   = (dash?.conversations  || 0) > 0;
+  const allDone    = hasCatalog && hasFaq && hasConvs;
+
+  if (!allDone) {
+    const step = (done, label, sub, action, view) => `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)">
+      <div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;
+        background:${done ? '#dcfce7' : '#f3f4f6'};color:${done ? '#166534' : '#9ca3af'};margin-top:1px">
+        ${done ? '✓' : '○'}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:${done ? '400' : '500'};color:${done ? 'var(--muted)' : 'var(--text)'};
+          text-decoration:${done ? 'line-through' : 'none'}">${label}</div>
+        ${!done ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div>` : ''}
+      </div>
+      ${!done ? `<button class="btn btn-s btn-sm" onclick="navigate('${view}')">${action}</button>` : ''}
+    </div>`;
+
+    document.getElementById('ov-onboarding').innerHTML = `
+<div class="card" style="margin-bottom:20px;border-left:3px solid var(--blue)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <div style="font-size:15px;font-weight:600">Nastavení Zapi</div>
+    <div class="badge bg-blue">${[hasCatalog,hasFaq,hasConvs].filter(Boolean).length}/3 hotovo</div>
+  </div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Dokončete tyto kroky pro první zákazníky</div>
+  ${step(hasCatalog, 'Nahrát katalog produktů', 'AI bude znát vaše produkty, ceny a dostupnost', 'Nahrát CSV', 'catalog')}
+  ${step(hasFaq,     'Přidat časté dotazy', 'Odpovědi na typické otázky zákazníků', 'Přidat FAQ', 'faqs')}
+  ${step(hasConvs,   'Vložit widget na web a otestovat', 'Zkopírujte kód níže a vložte ho do svého e-shopu', 'Zobrazit kód ↓', 'overview')}
+</div>`;
+  }
+
+  // ── Stat cards ──
+  const d = dash || {};
+  const wowPct = analytics?.prev_week > 0
+    ? Math.round(((analytics.week - analytics.prev_week) / analytics.prev_week) * 100)
+    : null;
+
+  document.getElementById('stats').innerHTML = [
+    { lbl: 'Konverzace (30d)', val: d.conversations ?? '—', sub: wowPct != null ? (wowPct >= 0 ? `▲ ${wowPct}% vs. minulý týden` : `▼ ${Math.abs(wowPct)}% vs. minulý týden`) : null, subCls: wowPct >= 0 ? 'green' : 'red' },
+    { lbl: 'Zprávy (30d)',     val: d.messages ?? '—', sub: null },
+    { lbl: 'AI skóre',        val: d.ai_score != null ? d.ai_score + '%' : '—', cls: 'blue', sub: 'průměr odpovědí' },
+    { lbl: 'AI vyřešeno',     val: d.ai_resolved_pct != null ? d.ai_resolved_pct + '%' : '—', cls: 'blue', sub: 'bez přepojení' },
+  ].map(s => `
+<div class="stat">
+  <div class="lbl">${s.lbl}</div>
+  <div class="val ${s.cls || ''}">${s.val}</div>
+  ${s.sub ? `<div style="font-size:11px;margin-top:5px;color:${s.subCls === 'green' ? 'var(--success)' : s.subCls === 'red' ? 'var(--danger)' : 'var(--muted)'}">${s.sub}</div>` : ''}
+</div>`).join('');
+
+  // ── Charts area ──
+  const a = analytics || {};
+
+  document.getElementById('ov-charts').innerHTML = `
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="charts-grid">
+
+  <div class="card" style="grid-column:span 2">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="card-title" style="margin:0">Konverzace za posledních 30 dní</div>
+    </div>
+    ${barChart(a.daily || [])}
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">
+      <span>${(a.daily || []).at(0)?.day?.slice(5) || ''}</span>
+      <span>${(a.daily || []).at(-1)?.day?.slice(5) || ''}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Stav konverzací</div>
+    ${statusChart(a.statuses || [])}
+  </div>
+
+  <div class="card">
+    <div class="card-title">Kvalita odpovědí AI</div>
+    ${scoreDist(a.score_dist || {})}
+  </div>
+
+</div>
+
+${(a.top_questions || []).length ? `
+<div class="card" style="margin-bottom:16px">
+  <div class="card-title">Nejčastější dotazy zákazníků</div>
+  ${(a.top_questions).map((q, i) => `
+  <div style="display:flex;align-items:center;gap:12px;padding:9px 0;${i < a.top_questions.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+    <span style="font-size:12px;font-weight:700;color:var(--blue);width:20px;flex-shrink:0">${i + 1}</span>
+    <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(q.content)}</span>
+    <span class="badge bg-gray">${q.count}×</span>
+  </div>`).join('')}
+</div>` : ''}`;
+
+  // ── Embed & API key ──
+  const apiKey = S.shop?.api_key || '—';
+  const embedCode = `<script\n  src="${location.origin}/widget.js"\n  data-api-key="${apiKey}"\n  data-greeting="Ahoj! Jak vám mohu pomoci?"\n><\/script>`;
+
+  document.getElementById('ov-bottom').innerHTML = `
+<div class="card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div class="card-title" style="margin:0">Vložení widgetu na web</div>
+    <a href="/widget-test.html?key=${encodeURIComponent(apiKey)}" target="_blank" class="btn btn-s btn-sm">▶ Otestovat widget</a>
+  </div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:10px">
+    Vložte tento kód do <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">&lt;head&gt;</code> vašeho e-shopu — stačí jednou, widget se sám načte na každé stránce:
+  </div>
+  <div class="code-box">
+    <pre>${embedCode}</pre>
+    <button class="cp" id="copy-embed">Kopírovat</button>
+  </div>
+  <div style="margin-top:14px">
+    <div style="font-size:13px;font-weight:500;margin-bottom:8px">Váš API klíč:</div>
+    <div class="row">
+      <div class="key-val">${apiKey}</div>
+      <button class="btn btn-s btn-sm" id="copy-key">Kopírovat</button>
+    </div>
+  </div>
+  <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px">Způsoby instalace:</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:8px;padding:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">🔌 WordPress plugin</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Nahrajte .zip, zadejte API klíč — hotovo. Bez kódu.</div>
+        <a href="/zapi-widget.zip" download class="btn btn-p btn-sm" style="font-size:12px">⬇ Stáhnout plugin</a>
+      </div>
+      <div style="background:#f8f9fc;border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">📋 Kód do &lt;head&gt;</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Shoptet, Wix, vlastní web — vložte snippet výše.</div>
+        <span style="font-size:12px;color:var(--muted)">WordPress · Shopify · Wix · HTML</span>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+  document.getElementById('copy-key').onclick   = () => copy(apiKey, 'copy-key');
+  document.getElementById('copy-embed').onclick = () => copy(embedCode.replace(/<\/script>/g, '<' + '/script>'), 'copy-embed');
+}
+
+// ── Chart helpers ─────────────────────────────────────────────────────────────
+function barChart(daily) {
+  if (!daily.length) return '<div class="empty" style="padding:20px">Žádná data</div>';
+  const max = Math.max(...daily.map(d => d.count), 1);
+  const W = 680, H = 80, pad = 2;
+  const bw = Math.floor((W - pad * (daily.length - 1)) / daily.length);
+
+  const bars = daily.map((d, i) => {
+    const h = Math.max(Math.round((d.count / max) * H), d.count > 0 ? 3 : 0);
+    const x = i * (bw + pad);
+    const y = H - h;
+    const col = d.count === 0 ? '#e5e7eb' : '#4f6ef7';
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" fill="${col}" rx="2" opacity="${d.count ? 0.85 : 1}"><title>${d.day}: ${d.count}</title></rect>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:80px;display:block">${bars}</svg>`;
+}
+
+function statusChart(statuses) {
+  if (!statuses.length) return '<div class="empty" style="padding:16px">Žádná data</div>';
+  const total = statuses.reduce((s, r) => s + r.count, 0);
+  const colors = { active: '#4f6ef7', resolved: '#22c55e', transferred: '#f59e0b', past_due: '#ef4444' };
+  const labels = { active: 'Aktivní', resolved: 'Vyřešeno', transferred: 'Přepojeno' };
+
+  const bars = statuses.map(r => {
+    const pct = Math.round((r.count / total) * 100);
+    const col = colors[r.status] || '#9ca3af';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${col};flex-shrink:0"></div>
+      <div style="flex:1;font-size:13px">${labels[r.status] || r.status}</div>
+      <div style="width:120px;height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;min-width:40px;text-align:right">${pct}%</div>
+      <div style="font-size:12px;color:var(--muted);min-width:24px;text-align:right">${r.count}</div>
+    </div>`;
+  }).join('');
+
+  return `${bars}<div style="font-size:12px;color:var(--muted);margin-top:6px">Celkem: ${total}</div>`;
+}
+
+function scoreDist(dist) {
+  const total = (dist.low || 0) + (dist.mid || 0) + (dist.good || 0) + (dist.great || 0);
+  if (!total) return '<div class="empty" style="padding:16px">Žádná data</div>';
+
+  const segments = [
+    { key: 'low',   label: '< 70%',  col: '#ef4444' },
+    { key: 'mid',   label: '70–80%', col: '#f59e0b' },
+    { key: 'good',  label: '80–90%', col: '#4f6ef7' },
+    { key: 'great', label: '90%+',   col: '#22c55e' },
+  ];
+
+  // Stacked horizontal bar
+  const stackBar = segments.map(s => {
+    const pct = Math.round(((dist[s.key] || 0) / total) * 100);
+    return pct > 0
+      ? `<div style="width:${pct}%;background:${s.col};height:100%" title="${s.label}: ${dist[s.key]}"></div>`
+      : '';
+  }).join('');
+
+  const legend = segments.map(s => {
+    const pct = Math.round(((dist[s.key] || 0) / total) * 100);
+    return `<div style="display:flex;align-items:center;gap:6px;font-size:12px">
+      <div style="width:9px;height:9px;border-radius:50%;background:${s.col}"></div>
+      ${s.label} <strong>${pct}%</strong>
+    </div>`;
+  }).join('');
+
+  return `
+<div style="height:14px;border-radius:7px;overflow:hidden;display:flex;margin-bottom:14px">${stackBar}</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px">${legend}</div>`;
+}
+
+// ── Conversations ─────────────────────────────────────────────────────────────
+async function conversations() {
+  const m = main();
+  m.innerHTML = `<div class="ph"><h1>Konverzace</h1><p>Přehled všech chatů zákazníků</p></div>
+<div class="card"><div class="loading" id="conv-list">Načítám…</div></div>`;
+
+  const { conversations: rows = [], total = 0 } = await api('GET', '/api/shop/conversations?limit=30').catch(() => ({}));
+
+  if (!rows.length) {
+    document.getElementById('conv-list').outerHTML = `
+<div class="empty">
+  <div style="font-size:32px;margin-bottom:10px">💬</div>
+  <div style="font-weight:500;margin-bottom:6px">Zatím žádné konverzace</div>
+  <div style="font-size:13px">Vložte widget na váš e-shop — první zprávy zákazníků se zobrazí zde.</div>
+  <button class="btn btn-p btn-sm" style="margin-top:14px" onclick="navigate('overview')">Zobrazit kód widgetu →</button>
+</div>`;
+    return;
+  }
+
+  document.getElementById('conv-list').outerHTML = `
+<div style="font-size:13px;color:var(--muted);margin-bottom:10px">Celkem: ${total}</div>
+<div class="tbl-wrap">
+<table>
+  <thead><tr>
+    <th>První zpráva</th><th>Zpráv</th><th>AI skóre</th><th>Stav</th><th>Datum</th><th></th>
+  </tr></thead>
+  <tbody id="conv-tbody">
+    ${rows.map(c => `
+    <tr data-id="${c.id}">
+      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.first_message || '—')}</td>
+      <td>${c.message_count}</td>
+      <td>${scoreBar(c.avg_score)}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td style="color:var(--muted);font-size:13px">${fmtDate(c.created_at)}</td>
+      <td><button class="btn btn-s btn-sm view-conv" data-id="${c.id}">Detail</button></td>
+    </tr>`).join('')}
+  </tbody>
+</table></div>
+<div id="conv-detail-area"></div>`;
+
+  document.querySelectorAll('.view-conv').forEach(btn => {
+    btn.onclick = () => viewConversation(btn.dataset.id);
+  });
+}
+
+async function viewConversation(id) {
+  const el = document.getElementById('conv-detail-area');
+  el.innerHTML = `<div class="card mt14"><div class="loading">Načítám…</div></div>`;
+  const conv = await api('GET', `/api/shop/conversations/${id}`).catch(() => null);
+  if (!conv) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+<div class="card mt14">
+  <div class="row">
+    <div class="card-title" style="margin-bottom:0;flex:1">Konverzace</div>
+    ${statusBadge(conv.status)}
+    <select id="status-sel" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none">
+      ${['active','resolved','transferred'].map(s => `<option value="${s}" ${conv.status===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+    <button class="btn btn-s btn-sm" id="save-status">Uložit</button>
+    <button class="btn btn-s btn-sm" id="close-detail">✕</button>
+  </div>
+  <div class="conv-thread">
+    ${conv.messages.map(msg => `
+    <div class="msg-row ${msg.role}">
+      <div class="msg-role">${msg.role === 'user' ? 'Zákazník' : 'Zapi'}</div>
+      <div class="msg-text">${esc(msg.content)}</div>
+    </div>`).join('')}
+  </div>
+</div>`;
+
+  document.getElementById('close-detail').onclick = () => { el.innerHTML = ''; };
+  document.getElementById('save-status').onclick = async () => {
+    const status = document.getElementById('status-sel').value;
+    await api('PATCH', `/api/shop/conversations/${id}`, { status }).catch(() => {});
+    conversations();
+  };
+}
+
+// ── Catalog ───────────────────────────────────────────────────────────────────
+async function catalog() {
+  const m = main();
+  m.innerHTML = `
+<div class="ph"><h1>Katalog produktů</h1><p>Nahrajte CSV soubor s vašimi produkty</p></div>
+<div class="card">
+  <div class="card-title">Nahrát CSV</div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:12px">
+    Podporované sloupce: <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">name, price, description, category, url, in_stock</code>
+  </div>
+  <label class="upload-zone" id="drop-zone">
+    <input type="file" id="csv-file" accept=".csv">
+    <div>📂 Klikněte nebo přetáhněte CSV soubor</div>
+    <div style="font-size:12px;margin-top:6px;color:#9ca3af">max. 5 MB</div>
+  </label>
+  <div id="upload-msg"></div>
+</div>
+<div class="card" id="products-card"><div class="loading">Načítám…</div></div>`;
+
+  document.getElementById('csv-file').onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const fd = new FormData(); fd.append('file', file);
+    const msg = document.getElementById('upload-msg');
+    msg.innerHTML = `<div class="alert alert-s" style="margin-top:10px">Nahrávám…</div>`;
+    try {
+      const r = await api('POST', '/api/shop/catalog', fd);
+      msg.innerHTML = `<div class="alert alert-s" style="margin-top:10px">✅ Importováno ${r.imported} produktů z ${r.total_in_file}</div>`;
+      loadProducts();
+    } catch (e) {
+      msg.innerHTML = `<div class="alert alert-e" style="margin-top:10px">${e.data?.error || 'Chyba'}</div>`;
+    }
+  };
+
+  loadProducts();
+}
+
+async function loadProducts() {
+  const card = document.getElementById('products-card');
+  if (!card) return;
+  card.innerHTML = '<div class="loading">Načítám…</div>';
+  const { products = [], total = 0 } = await api('GET', '/api/shop/products?limit=50').catch(() => ({}));
+
+  if (!total) {
+    card.innerHTML = `
+<div class="empty">
+  <div style="font-size:32px;margin-bottom:10px">📦</div>
+  <div style="font-weight:500;margin-bottom:6px">Katalog je prázdný</div>
+  <div style="font-size:13px">Nahrajte CSV soubor výše — AI bude znát vaše produkty, ceny a dostupnost na skladě.</div>
+  <div style="font-size:12px;color:var(--muted);margin-top:8px">Minimálně sloupec <code style="background:#f3f4f6;padding:1px 4px;border-radius:3px">name</code> je povinný. Ostatní jsou volitelné.</div>
+</div>`;
+    return;
+  }
+
+  card.innerHTML = `
+<div class="row" style="margin-bottom:12px">
+  <span style="flex:1;font-weight:600;font-size:15px">Produkty (${total})</span>
+  <button class="btn btn-d btn-sm" id="del-all">Smazat vše</button>
+</div>
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Název</th><th>Cena</th><th>Kategorie</th><th>Sklad</th></tr></thead>
+  <tbody>
+    ${products.map(p => `<tr>
+      <td>${esc(p.name)}${p.url ? ` <a href="${esc(p.url)}" target="_blank" style="color:var(--blue);font-size:12px">↗</a>` : ''}</td>
+      <td>${p.price != null ? p.price + ' Kč' : '—'}</td>
+      <td style="color:var(--muted)">${esc(p.category || '—')}</td>
+      <td>${p.in_stock ? '<span class="badge bg-green">✓ Skladem</span>' : '<span class="badge bg-red">Vyprodáno</span>'}</td>
+    </tr>`).join('')}
+  </tbody>
+</table></div>`;
+
+  document.getElementById('del-all').onclick = async () => {
+    if (!confirm(`Smazat všech ${total} produktů?`)) return;
+    await api('DELETE', '/api/shop/products');
+    loadProducts();
+  };
+}
+
+// ── FAQs ──────────────────────────────────────────────────────────────────────
+async function faqs() {
+  const m = main();
+  m.innerHTML = `
+<div class="ph"><h1>Časté dotazy</h1><p>AI asistent je použije při odpovídání</p></div>
+<div class="card">
+  <div class="card-title">Přidat FAQ</div>
+  <div id="faq-alert"></div>
+  <div class="fg"><label>Otázka</label><input id="faq-q" placeholder="Jak vrátit zboží?" /></div>
+  <div class="fg"><label>Odpověď</label><textarea id="faq-a" placeholder="Do 14 dní bez udání důvodu…"></textarea></div>
+  <button class="btn btn-p" id="add-faq">Přidat</button>
+</div>
+<div class="card mt14" id="faq-list"><div class="loading">Načítám…</div></div>`;
+
+  document.getElementById('add-faq').onclick = async () => {
+    const q = document.getElementById('faq-q').value.trim();
+    const a = document.getElementById('faq-a').value.trim();
+    const alert = document.getElementById('faq-alert');
+    if (!q || !a) { alert.innerHTML = `<div class="alert alert-e">Vyplňte otázku i odpověď.</div>`; return; }
+    try {
+      await api('POST', '/api/shop/faqs', { question: q, answer: a });
+      document.getElementById('faq-q').value = '';
+      document.getElementById('faq-a').value = '';
+      alert.innerHTML = `<div class="alert alert-s">FAQ přidáno.</div>`;
+      setTimeout(() => { alert.innerHTML = ''; }, 2000);
+      loadFaqs();
+    } catch (e) {
+      alert.innerHTML = `<div class="alert alert-e">${e.data?.error || 'Chyba'}</div>`;
+    }
+  };
+
+  loadFaqs();
+}
+
+async function loadFaqs() {
+  const el = document.getElementById('faq-list');
+  if (!el) return;
+  const rows = await api('GET', '/api/shop/faqs').catch(() => []);
+  if (!rows.length) { el.innerHTML = '<div class="empty">Zatím žádné FAQ.</div>'; return; }
+  el.innerHTML = `
+<div class="card-title">Uložené FAQ (${rows.length})</div>
+${rows.map(f => `
+<div class="faq-row">
+  <div class="faq-body">
+    <div class="faq-q">${esc(f.question)}</div>
+    <div class="faq-a">${esc(f.answer)}</div>
+  </div>
+  <button class="btn btn-d btn-sm del-faq" data-id="${f.id}">Smazat</button>
+</div>`).join('')}`;
+
+  el.querySelectorAll('.del-faq').forEach(btn => {
+    btn.onclick = async () => {
+      await api('DELETE', `/api/shop/faqs/${btn.dataset.id}`);
+      loadFaqs();
+    };
+  });
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+async function settings() {
+  const shop = await api('GET', '/api/shop').catch(() => S.shop);
+  if (shop) S.shop = shop;
+  const cfg = shop?.config || {};
+
+  main().innerHTML = `
+<div class="ph"><h1>Nastavení</h1><p>Konfigurace AI asistenta</p></div>
+<div class="card">
+  <div id="cfg-alert"></div>
+  <div class="fg"><label>Název e-shopu</label><input id="s-name" value="${esc(shop?.name || '')}" /></div>
+  <div class="fg"><label>Web e-shopu</label><input id="s-url" value="${esc(shop?.website_url || '')}" placeholder="https://mujshop.cz" /></div>
+  <div class="fg">
+    <label>Tón komunikace</label>
+    <input id="s-tone" value="${esc(cfg.tone || '')}" placeholder="přátelský a profesionální" />
+  </div>
+  <div class="fg">
+    <label>URL reklamačního formuláře</label>
+    <input id="s-complaint" value="${esc(cfg.complaint_url || '')}" placeholder="https://mujshop.cz/reklamace" />
+  </div>
+  <div class="fg">
+    <label>Pokyn pro operátora (při přepojení)</label>
+    <textarea id="s-op">${esc(cfg.operator_prompt || '')}</textarea>
+  </div>
+  <div class="fg">
+    <label>Povolené domény <span style="font-weight:400;color:var(--muted)">(volitelné — bezpečnostní whitelist)</span></label>
+    <input id="s-domains" value="${esc((cfg.allowed_domains || []).join(', '))}" placeholder="mujshop.cz, www.mujshop.cz" />
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Pokud vyplníte, widget bude fungovat pouze z těchto domén. Oddělte čárkou.</div>
+  </div>
+  <button class="btn btn-p" id="save-cfg">Uložit nastavení</button>
+</div>`;
+
+  document.getElementById('save-cfg').onclick = async () => {
+    const btn = document.getElementById('save-cfg');
+    btn.disabled = true;
+    const alert = document.getElementById('cfg-alert');
+    try {
+      const domainsRaw = document.getElementById('s-domains').value;
+      const allowed_domains = domainsRaw.split(',').map(d => d.trim()).filter(Boolean);
+      await api('PATCH', '/api/shop/config', {
+        name:            document.getElementById('s-name').value,
+        website_url:     document.getElementById('s-url').value,
+        tone:            document.getElementById('s-tone').value,
+        complaint_url:   document.getElementById('s-complaint').value,
+        operator_prompt: document.getElementById('s-op').value,
+        allowed_domains,
+      });
+      alert.innerHTML = `<div class="alert alert-s">Nastavení uloženo ✓</div>`;
+      setTimeout(() => { alert.innerHTML = ''; }, 2500);
+      btn.disabled = false;
+      const fresh = await api('GET', '/api/shop').catch(() => null);
+      if (fresh) S.shop = fresh;
+    } catch (e) {
+      alert.innerHTML = `<div class="alert alert-e">${e.data?.error || 'Chyba'}</div>`;
+      btn.disabled = false;
+    }
+  };
+}
+
+// ── Billing ───────────────────────────────────────────────────────────────────
+async function billing() {
+  const shop = S.shop || await api('GET', '/api/shop').catch(() => null);
+  const plan = shop?.plan || 'trial';
+  const trialDays = shop?.trial_ends_at
+    ? Math.max(0, Math.ceil((shop.trial_ends_at - Date.now() / 1000) / 86400))
+    : 0;
+
+  main().innerHTML = `
+<div class="ph"><h1>Fakturace</h1><p>Správa předplatného</p></div>
+<div class="card">
+  <div class="card-title">Váš plán</div>
+  ${plan === 'pro' ? `
+  <p style="font-size:15px">Jste na plánu <strong style="color:var(--blue)">Pro ⚡</strong>.</p>
+  <div class="mt14">
+    <button class="btn btn-s" id="portal-btn">Spravovat předplatné (Stripe)</button>
+  </div>` : `
+  <p style="color:var(--muted);font-size:14px">Zkušební verze — zbývá ${trialDays} dní</p>
+  <div class="billing-hero">
+    <div class="price"><sup>CZK</sup>349<sub>/měs</sub></div>
+    <p style="color:var(--muted);margin-top:8px;font-size:14px">Plán Pro — neomezené konverzace, prioritní podpora</p>
+  </div>
+  <ul style="font-size:14px;color:var(--muted);line-height:2;padding-left:20px;margin-bottom:20px">
+    <li>✅ Neomezené AI konverzace</li>
+    <li>✅ Detekce zásilek (5 dopravců)</li>
+    <li>✅ CSV katalog produktů</li>
+    <li>✅ Dashboard & analytika</li>
+    <li>✅ Prioritní podpora</li>
+  </ul>
+  <button class="btn btn-p" id="subscribe-btn">Přejít na Pro →</button>`}
+  <div id="billing-alert" style="margin-top:12px"></div>
+</div>`;
+
+  document.getElementById('subscribe-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('subscribe-btn');
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      const { url } = await api('POST', '/api/billing/subscribe');
+      window.location.href = url;
+    } catch (e) {
+      document.getElementById('billing-alert').innerHTML =
+        `<div class="alert alert-e">${e.data?.error || 'Stripe není nakonfigurován'}</div>`;
+      btn.disabled = false; btn.textContent = 'Přejít na Pro →';
+    }
+  });
+
+  document.getElementById('portal-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('portal-btn');
+    btn.disabled = true;
+    try {
+      const { url } = await api('POST', '/api/billing/portal');
+      window.location.href = url;
+    } catch (e) {
+      document.getElementById('billing-alert').innerHTML =
+        `<div class="alert alert-e">${e.data?.error || 'Chyba'}</div>`;
+      btn.disabled = false;
+    }
+  });
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copy(text, btnId) {
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = 'Zkopírováno!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts * 1000).toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function scoreBar(score) {
+  if (score == null) return '<span style="color:var(--muted)">—</span>';
+  const pct = Math.round(score * 100);
+  return `<div class="score-bar"><div class="bar"><div class="fill" style="width:${pct}%"></div></div><span style="font-size:13px">${pct}%</span></div>`;
+}
+
+function statusBadge(s) {
+  const map = { active: 'bg-blue', resolved: 'bg-green', transferred: 'bg-yellow', past_due: 'bg-red' };
+  return `<span class="badge ${map[s] || 'bg-gray'}">${s || '—'}</span>`;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+async function boot() {
+  if (!S.token) { renderAuth(); return; }
+  const hash = location.hash.slice(1);
+  if (hash) S.view = hash;
+  try {
+    S.shop = await api('GET', '/api/auth/me');
+    renderApp();
+  } catch (e) {
+    if (e.status === 401) { S.token = null; localStorage.removeItem('zapi_token'); renderAuth(); }
+    else renderApp();
+  }
+}
+
+boot();
+</script>
+</body>
+</html>

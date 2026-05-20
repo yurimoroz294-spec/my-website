@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test widgetu — Zapi</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:760px;margin:60px auto;padding:0 24px;color:#1a1a2e}
+    h1{font-size:22px;font-weight:700}
+    p{color:#555;line-height:1.6;margin-top:10px}
+    .box{background:#f1f4fb;border-radius:10px;padding:16px 20px;margin-top:20px;font-size:14px}
+    .box strong{display:block;margin-bottom:6px}
+    code{background:#e5e7eb;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px}
+    .ok{background:#dcfce7;color:#166534;padding:10px 16px;border-radius:8px;font-size:14px;margin-top:16px}
+    .warn{background:#fef9c3;color:#854d0e;padding:10px 16px;border-radius:8px;font-size:14px;margin-top:16px}
+    a.back{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:#4f6ef7;text-decoration:none;margin-bottom:24px}
+    a.back:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <a class="back" href="/dashboard.html">← Zpět do dashboardu</a>
+  <h1>Test widgetu Zapi</h1>
+  <p>Tato stránka simuluje váš e-shop s vloženým Zapi widgetem. Tlačítko chatu je vpravo dole ↘</p>
+
+  <div id="status"></div>
+
+  <div class="box">
+    <strong>Váš API klíč:</strong>
+    <code id="key-display">načítám…</code>
+  </div>
+
+  <div class="box" style="margin-top:12px">
+    <strong>Jak vložit widget na váš e-shop:</strong>
+    Zkopírujte tento kód a vložte ho do <code>&lt;head&gt;</code> vašich stránek:
+    <div style="margin-top:10px;background:#1a1a2e;border-radius:8px;padding:12px;position:relative">
+      <pre id="embed-snippet" style="color:#a5b4fc;font-size:12.5px;line-height:1.5;white-space:pre-wrap;margin:0"></pre>
+      <button onclick="copySnippet()" style="position:absolute;top:10px;right:10px;background:rgba(79,110,247,.25);color:#a5b4fc;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Kopírovat</button>
+    </div>
+  </div>
+
+  <div class="box" style="margin-top:12px;background:#fff3cd;border:1px solid #fde68a">
+    <strong style="color:#92400e">⚠️ Poznámka k testu</strong>
+    <span style="color:#78350f">AI odpovědi fungují pouze s platným OpenAI API klíčem v <code>.env</code>.
+    Tracking zásilek a základní odpovědi fungují vždy.</span>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const apiKey = params.get('key') || 'REPLACE_WITH_YOUR_API_KEY';
+
+    document.getElementById('key-display').textContent = apiKey;
+    const snippet = `<script\n  src="${location.origin}/widget.js"\n  data-api-key="${apiKey}"\n  data-greeting="Ahoj! Jak vám mohu pomoci?"\n><\/script>`;
+    document.getElementById('embed-snippet').textContent = snippet;
+
+    const statusEl = document.getElementById('status');
+    if (apiKey !== 'REPLACE_WITH_YOUR_API_KEY') {
+      statusEl.innerHTML = '<div class="ok">✅ Widget je načten s vaším API klíčem. Klikněte na tlačítko vpravo dole a otestujte chat.</div>';
+    } else {
+      statusEl.innerHTML = '<div class="warn">⚠️ Otevřete tuto stránku přes tlačítko "Otestovat widget" v dashboardu pro automatické načtení vašeho klíče.</div>';
+    }
+
+    function copySnippet() {
+      navigator.clipboard.writeText(snippet.replace(/<\/script>/g, '<\/script>'));
+      event.target.textContent = 'Zkopírováno!';
+      setTimeout(() => event.target.textContent = 'Kopírovat', 2000);
+    }
+  </script>
+
+  <!-- Zapi widget — loaded dynamically with real API key -->
+  <script id="zapi-loader"></script>
+  <script>
+    const s = document.createElement('script');
+    s.src = '/widget.js';
+    s.setAttribute('data-api-key', apiKey);
+    s.setAttribute('data-greeting', 'Ahoj! Toto je testovací prostředí Zapi. Jak mohu pomoci?');
+    document.body.appendChild(s);
+  </script>
+</body>
+</html>
