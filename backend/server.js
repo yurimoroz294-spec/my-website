@@ -8,7 +8,18 @@ const auth      = require('./middleware/auth');
 const app = express();
 
 // ── Security & parsing ────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'", "'unsafe-inline'"],
+      styleSrc:   ["'self'", "'unsafe-inline'"],
+      imgSrc:     ["'self'", "data:"],
+      connectSrc: ["'self'", "*"],
+      fontSrc:    ["'self'", "https://fonts.gstatic.com"],
+    },
+  },
+}));
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 
