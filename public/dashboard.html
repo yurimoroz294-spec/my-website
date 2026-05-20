@@ -434,9 +434,20 @@ ${(a.top_questions || []).length ? `
       <button class="btn btn-s btn-sm" id="copy-key">Kopírovat</button>
     </div>
   </div>
-  <div style="margin-top:14px;padding:12px;background:#f8f9fc;border-radius:8px;font-size:13px;color:var(--muted)">
-    💡 <strong>WordPress:</strong> vložte do <em>Vzhled → Editor → header.php</em> před <code>&lt;/head&gt;</code> &nbsp;|&nbsp;
-    <strong>Shoptet:</strong> Admin → Šablony → Úpravy HTML/CSS → konec sekce &lt;head&gt;
+  <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px">Způsoby instalace:</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:#f0f4ff;border:1px solid #c7d7fd;border-radius:8px;padding:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">🔌 WordPress plugin</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Nahrajte .zip, zadejte API klíč — hotovo. Bez kódu.</div>
+        <a href="/zapi-widget.zip" download class="btn btn-p btn-sm" style="font-size:12px">⬇ Stáhnout plugin</a>
+      </div>
+      <div style="background:#f8f9fc;border:1px solid var(--border);border-radius:8px;padding:14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">📋 Kód do &lt;head&gt;</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Shoptet, Wix, vlastní web — vložte snippet výše.</div>
+        <span style="font-size:12px;color:var(--muted)">WordPress · Shopify · Wix · HTML</span>
+      </div>
+    </div>
   </div>
 </div>`;
 
