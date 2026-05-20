@@ -1,7 +1,11 @@
 const OpenAI = require('openai');
 const db     = require('../db');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let _openai = null;
+const openai = () => {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+};
 
 function buildSystemPrompt(shop, trackingInfo) {
   const cfg       = JSON.parse(shop.config || '{}');
@@ -83,7 +87,7 @@ async function chat(shop, history, trackingInfo = null) {
     ...history.slice(-10).map(m => ({ role: m.role, content: m.content })),
   ];
 
-  const response = await openai.chat.completions.create({
+  const response = await openai().chat.completions.create({
     model:       'gpt-4o-mini',
     messages,
     max_tokens:  400,
