@@ -1,0 +1,8 @@
+backend/node_modules
+backend/data
+backend/.env
+backend/*.db
+.git
+.gitignore
+*.md
+node_modules
