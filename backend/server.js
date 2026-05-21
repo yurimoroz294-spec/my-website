@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express   = require('express');
 const helmet    = require('helmet');
 const cors      = require('cors');
@@ -15,7 +15,7 @@ app.use(helmet({
       scriptSrc:  ["'self'", "'unsafe-inline'"],
       styleSrc:   ["'self'", "'unsafe-inline'"],
       imgSrc:     ["'self'", "data:"],
-      connectSrc: ["'self'", "*"],
+      connectSrc: ["'self'"],
       fontSrc:    ["'self'", "https://fonts.gstatic.com"],
     },
   },

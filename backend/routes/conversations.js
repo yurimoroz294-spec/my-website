@@ -24,12 +24,17 @@ function resolveShop(req, res) {
       res.status(402).json({ error: 'Trial expired' }); return null;
     }
 
-    // Optional domain whitelist — if configured, reject requests from unlisted origins
+    // Optional domain whitelist — if configured, reject requests from unlisted or missing origins
     const cfg = JSON.parse(shop.config || '{}');
     if (cfg.allowed_domains?.length) {
       const origin = req.headers.origin || '';
-      const allowed = cfg.allowed_domains.some(d => origin === d || origin.endsWith('.' + d));
-      if (!allowed && origin) {
+      const allowed = origin && cfg.allowed_domains.some(d => {
+        try {
+          const host = new URL(origin).hostname;
+          return host === d || host.endsWith('.' + d);
+        } catch { return false; }
+      });
+      if (!allowed) {
         res.status(403).json({ error: 'Domain not allowed' }); return null;
       }
     }

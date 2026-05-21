@@ -63,7 +63,14 @@ router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) =>
     case 'customer.subscription.updated': {
       const shopId = sub.metadata?.shop_id;
       if (!shopId) break;
-      const plan = sub.status === 'active' ? 'pro' : 'trial';
+      // Verify the subscription's customer matches our DB record — prevents metadata tampering
+      const shop = db.prepare('SELECT stripe_customer_id FROM shops WHERE id = ?').get(shopId);
+      if (!shop || shop.stripe_customer_id !== sub.customer) {
+        console.warn(`Webhook mismatch: sub.customer=${sub.customer} shop.stripe_customer_id=${shop?.stripe_customer_id}`);
+        break;
+      }
+      const planMap = { active: 'pro', trialing: 'trial', past_due: 'past_due', canceled: 'trial', unpaid: 'past_due' };
+      const plan = planMap[sub.status] || 'trial';
       db.prepare('UPDATE shops SET plan = ?, stripe_subscription_id = ? WHERE id = ?')
         .run(plan, sub.id, shopId);
       break;
@@ -71,12 +78,14 @@ router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) =>
     case 'customer.subscription.deleted': {
       const shopId = sub.metadata?.shop_id;
       if (!shopId) break;
+      const shop = db.prepare('SELECT stripe_customer_id FROM shops WHERE id = ?').get(shopId);
+      if (!shop || shop.stripe_customer_id !== sub.customer) break;
       db.prepare("UPDATE shops SET plan = 'trial', stripe_subscription_id = NULL WHERE id = ?").run(shopId);
       break;
     }
     case 'invoice.payment_failed': {
-      const customerId = sub.customer;
-      db.prepare("UPDATE shops SET plan = 'past_due' WHERE stripe_customer_id = ?").run(customerId);
+      // customer_id comes from Stripe directly — safe to use as lookup key
+      db.prepare("UPDATE shops SET plan = 'past_due' WHERE stripe_customer_id = ?").run(sub.customer);
       break;
     }
   }

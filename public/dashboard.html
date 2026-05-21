@@ -191,22 +191,27 @@ window.addEventListener('hashchange', () => {
 function main() { return document.getElementById('main-content'); }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-function renderAuth(mode = 'login') {
+function renderAuth(mode = 'login', resetToken = '') {
+  const titles = { login: 'Přihlásit se do dashboardu', register: 'Vytvořit účet zdarma', forgot: 'Obnovení hesla', reset: 'Nastavit nové heslo' };
+  const btnLabels = { login: 'Přihlásit se', register: 'Vytvořit účet', forgot: 'Odeslat odkaz', reset: 'Uložit heslo' };
+
   document.getElementById('app').innerHTML = `
 <div class="auth-wrap">
   <div class="auth-card">
     <div class="auth-logo">Z<span>api</span></div>
-    <div class="auth-sub">${mode === 'login' ? 'Přihlásit se do dashboardu' : 'Vytvořit účet zdarma'}</div>
+    <div class="auth-sub">${titles[mode]}</div>
     <div id="alert"></div>
     ${mode === 'register' ? `<div class="fg"><label>Název e-shopu</label><input id="name" placeholder="Můj e-shop" /></div>` : ''}
-    <div class="fg"><label>E-mail</label><input id="email" type="email" placeholder="vas@email.cz" /></div>
-    <div class="fg"><label>Heslo</label><input id="pass" type="password" placeholder="min. 8 znaků" /></div>
+    ${['login','register','forgot'].includes(mode) ? `<div class="fg"><label>E-mail</label><input id="email" type="email" placeholder="vas@email.cz" /></div>` : ''}
+    ${['login','register','reset'].includes(mode) ? `<div class="fg"><label>Heslo</label><input id="pass" type="password" placeholder="min. 8 znaků" /></div>` : ''}
+    ${mode === 'reset' ? `<div class="fg"><label>Heslo znovu</label><input id="pass2" type="password" placeholder="min. 8 znaků" /></div>` : ''}
     ${mode === 'register' ? `<div class="fg"><label>Web e-shopu (volitelné)</label><input id="url" placeholder="https://mujshop.cz" /></div>` : ''}
-    <button class="btn btn-p btn-full" id="submit-btn">${mode === 'login' ? 'Přihlásit se' : 'Vytvořit účet'}</button>
+    <button class="btn btn-p btn-full" id="submit-btn">${btnLabels[mode]}</button>
     <div class="auth-toggle">
-      ${mode === 'login'
-        ? 'Ještě nemáte účet? <a id="toggle-auth">Registrovat se</a>'
-        : 'Máte účet? <a id="toggle-auth">Přihlásit se</a>'}
+      ${mode === 'login'    ? 'Ještě nemáte účet? <a id="toggle-auth">Registrovat se</a> &nbsp;·&nbsp; <a id="forgot-link">Zapomněli jste heslo?</a>' : ''}
+      ${mode === 'register' ? 'Máte účet? <a id="toggle-auth">Přihlásit se</a>' : ''}
+      ${mode === 'forgot'   ? '<a id="toggle-auth">← Zpět na přihlášení</a>' : ''}
+      ${mode === 'reset'    ? '' : ''}
     </div>
   </div>
 </div>`;
@@ -215,31 +220,47 @@ function renderAuth(mode = 'login') {
     document.getElementById('alert').innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
   };
 
-  document.getElementById('toggle-auth').onclick = () => renderAuth(mode === 'login' ? 'register' : 'login');
+  document.getElementById('toggle-auth')?.addEventListener('click', () =>
+    renderAuth(mode === 'register' ? 'login' : mode === 'forgot' ? 'login' : 'register')
+  );
+  document.getElementById('forgot-link')?.addEventListener('click', () => renderAuth('forgot'));
 
   document.getElementById('submit-btn').onclick = async () => {
     const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.textContent = '…';
+    btn.disabled = true; btn.textContent = '…';
+
     try {
-      const body = { email: document.getElementById('email').value, password: document.getElementById('pass').value };
-      if (mode === 'register') {
-        body.name = document.getElementById('name').value;
-        body.website_url = document.getElementById('url')?.value;
+      if (mode === 'forgot') {
+        await api('POST', '/api/auth/forgot-password', { email: document.getElementById('email').value });
+        showAlert('Pokud tento e-mail existuje, obdržíte odkaz pro obnovení hesla.', 's');
+        btn.disabled = false; btn.textContent = btnLabels[mode];
+        return;
       }
+
+      if (mode === 'reset') {
+        const password = document.getElementById('pass').value;
+        const pass2    = document.getElementById('pass2').value;
+        if (password !== pass2) { showAlert('Hesla se neshodují', 'e'); btn.disabled = false; btn.textContent = btnLabels[mode]; return; }
+        await api('POST', '/api/auth/reset-password', { token: resetToken, password });
+        showAlert('Heslo bylo změněno. Nyní se můžete přihlásit.', 's');
+        setTimeout(() => renderAuth('login'), 2000);
+        return;
+      }
+
+      const body = { email: document.getElementById('email').value, password: document.getElementById('pass').value };
+      if (mode === 'register') { body.name = document.getElementById('name').value; body.website_url = document.getElementById('url')?.value; }
       const data = await api('POST', `/api/auth/${mode}`, body);
       S.token = data.token; S.shop = data.shop;
       localStorage.setItem('zapi_token', S.token);
+      history.replaceState(null, '', location.pathname + location.hash);
       renderApp();
     } catch (e) {
       showAlert(e.data?.error || 'Chyba připojení', 'e');
-      btn.disabled = false;
-      btn.textContent = mode === 'login' ? 'Přihlásit se' : 'Vytvořit účet';
+      btn.disabled = false; btn.textContent = btnLabels[mode];
     }
   };
 
-  // Enter key
-  document.getElementById('pass').addEventListener('keydown', e => {
+  document.getElementById('pass')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('submit-btn').click();
   });
 }
@@ -896,6 +917,10 @@ function statusBadge(s) {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
+  const params = new URLSearchParams(location.search);
+  const resetToken = params.get('reset');
+  if (resetToken) { renderAuth('reset', resetToken); return; }
+
   if (!S.token) { renderAuth(); return; }
   const hash = location.hash.slice(1);
   if (hash) S.view = hash;

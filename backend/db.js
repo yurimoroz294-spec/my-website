@@ -71,6 +71,14 @@ db.exec(`
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    token      TEXT    PRIMARY KEY,
+    shop_id    TEXT    NOT NULL,
+    expires_at INTEGER NOT NULL,
+    used       INTEGER DEFAULT 0,
+    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_products_shop   ON products(shop_id);
   CREATE INDEX IF NOT EXISTS idx_faqs_shop       ON faqs(shop_id);
   CREATE INDEX IF NOT EXISTS idx_convs_shop      ON conversations(shop_id);
