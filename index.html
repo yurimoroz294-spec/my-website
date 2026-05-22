@@ -1,324 +1,647 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexAI — Intelligent Automation Solutions</title>
+  <title>LUNDR — Ekologické čisticí prostředky</title>
+  <meta name="description" content="LUNDR — nordické ekologické čisticí prostředky pro kuchyni a koupelnu. Přírodní složení, udržitelné obaly, doprava po celé ČR." />
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-  <!-- NAV -->
-  <header class="nav-wrap">
+  <!-- ══════════════════════════════════════════════
+       CART DRAWER
+  ══════════════════════════════════════════════ -->
+  <div id="cartOverlay" class="cart-overlay"></div>
+  <aside id="cartDrawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="Košík">
+    <div class="cart-header">
+      <h2 class="cart-title">Košík</h2>
+      <button id="cartClose" class="cart-close" aria-label="Zavřít košík">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="cartItems" class="cart-items">
+      <!-- Rendered by JS -->
+    </div>
+
+    <div id="cartEmpty" class="cart-empty">
+      <div class="cart-empty-icon">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <path d="M8 8h4l5.6 28.4A4 4 0 0 0 21.5 40h23a4 4 0 0 0 3.9-3.1L52 20H16" stroke="var(--green-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="24" cy="48" r="2.5" fill="var(--green-light)"/>
+          <circle cx="42" cy="48" r="2.5" fill="var(--green-light)"/>
+        </svg>
+      </div>
+      <p class="cart-empty-text">Váš košík je prázdný</p>
+      <p class="cart-empty-sub">Přidejte produkty a začněte čistit ekologicky.</p>
+    </div>
+
+    <div id="cartFooter" class="cart-footer" style="display:none">
+      <div class="cart-free-ship">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="5.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.6"/>
+          <circle cx="18.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.6"/>
+        </svg>
+        <span>Doprava zdarma nad <strong>500 Kč</strong></span>
+      </div>
+      <div class="cart-total-row">
+        <span class="cart-total-label">Celkem</span>
+        <span id="cartTotal" class="cart-total-price">0 Kč</span>
+      </div>
+      <button id="checkoutBtn" class="btn btn-primary btn-full">Přejít k pokladně</button>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════════
+       NAVIGATION
+  ══════════════════════════════════════════════ -->
+  <header id="navWrap" class="nav-wrap">
     <nav class="nav container">
-      <a href="#" class="logo">Nex<span>AI</span></a>
-      <ul class="nav-links">
-        <li><a href="#products">Products</a></li>
-        <li><a href="#how-it-works">How it works</a></li>
-        <li><a href="#benefits">Benefits</a></li>
-        <li><a href="#contact">Contact</a></li>
+      <a href="#" class="nav-logo" aria-label="LUNDR — domů">LUNDR</a>
+
+      <ul id="navLinks" class="nav-links" role="list">
+        <li><a href="#produkty" class="nav-link">Produkty</a></li>
+        <li><a href="#hodnoty" class="nav-link">Naše hodnoty</a></li>
+        <li><a href="#jak-to-funguje" class="nav-link">Jak to funguje</a></li>
+        <li><a href="#recenze" class="nav-link">Recenze</a></li>
       </ul>
-      <a href="#contact" class="btn btn-primary nav-cta">Get a demo</a>
-      <button class="hamburger" aria-label="Toggle menu">&#9776;</button>
+
+      <div class="nav-right">
+        <a href="#newsletter" class="nav-subscribe">Předplatit</a>
+        <button id="cartBtn" class="nav-cart-btn" aria-label="Otevřít košík">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="cartBadge" class="cart-badge" aria-live="polite" style="display:none">0</span>
+        </button>
+        <button id="hamburger" class="hamburger" aria-label="Otevřít menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </nav>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container hero-inner">
-      <div class="hero-badge">AI-Powered Business Automation</div>
-      <h1 class="hero-title">
-        Automate the work.<br />
-        <span class="gradient-text">Amplify the results.</span>
-      </h1>
-      <p class="hero-sub">
-        Modular AI tools that plug into your existing workflows — from customer
-        conversations to invoice processing — so your team focuses on what
-        actually matters.
-      </p>
-      <div class="hero-actions">
-        <a href="#products" class="btn btn-primary">Explore products</a>
-        <a href="#contact" class="btn btn-ghost">Talk to sales &rarr;</a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat"><span class="stat-num">10×</span><span class="stat-label">faster data entry</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">99%</span><span class="stat-label">extraction accuracy</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">customer support</span></div>
-      </div>
-    </div>
-    <div class="hero-bg-blob blob-1"></div>
-    <div class="hero-bg-blob blob-2"></div>
-  </section>
+  <main>
 
-  <!-- PRODUCTS -->
-  <section class="products" id="products">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Our Products</span>
-        <h2>Two tools. Endless efficiency.</h2>
-        <p>Each product is built to replace repetitive manual work with accurate, instant AI automation.</p>
-      </div>
+    <!-- ══════════════════════════════════════════════
+         HERO
+    ══════════════════════════════════════════════ -->
+    <section class="hero" aria-label="Úvod">
+      <div class="container hero-inner">
 
-      <!-- Product 1 — AI Chat -->
-      <div class="product-card card-chat">
-        <div class="product-visual">
-          <div class="chat-mockup">
-            <div class="chat-header">
-              <div class="chat-avatar">AI</div>
-              <div>
-                <div class="chat-name">NexAI Assistant</div>
-                <div class="chat-status"><span class="dot green"></span> Online</div>
-              </div>
+        <div class="hero-content reveal">
+          <p class="hero-eyebrow">Nordická čistota, přirozená síla</p>
+          <h1 class="hero-h1">
+            Čistá domácnost.<br>
+            <em>Čistá planeta.</em>
+          </h1>
+          <p class="hero-sub">
+            Ekologické čisticí prostředky pro kuchyni a koupelnu. Přírodní složení, udržitelné obaly a pohodlná doprava po celé České republice.
+          </p>
+          <div class="hero-btns">
+            <a href="#produkty" class="btn btn-primary">Prozkoumat produkty</a>
+            <a href="#hodnoty" class="btn btn-ghost">Naše filozofie →</a>
+          </div>
+          <div class="hero-badges">
+            <div class="hero-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Ecocert certifikováno</span>
             </div>
-            <div class="chat-messages">
-              <div class="msg msg-user">Hi, what are your working hours?</div>
-              <div class="msg msg-bot">We're available 24/7! How can I help you today?</div>
-              <div class="msg msg-user">I'd like to track my order.</div>
-              <div class="msg msg-bot">Sure! Please share your order number and I'll pull it up instantly.</div>
+            <div class="hero-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="var(--green)" stroke-width="1.7"/><path d="M8 12l3 3 5-5" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>100% přírodní složení</span>
             </div>
-            <div class="chat-input-bar">
-              <span class="chat-placeholder">Type a message…</span>
-              <button class="chat-send">&#10148;</button>
+            <div class="hero-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Vegan &amp; Cruelty-free</span>
+            </div>
+            <div class="hero-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.7"/><circle cx="18.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.7"/></svg>
+              <span>Doprava od 99 Kč</span>
             </div>
           </div>
         </div>
-        <div class="product-content">
-          <div class="product-tag">AI Chat</div>
-          <h3>Intelligent chat for your website</h3>
-          <p>
-            Deploy a context-aware AI assistant on your website in minutes. It handles
-            FAQs, qualifies leads, books meetings, and escalates complex queries to your
-            team — all without writing a single line of code.
-          </p>
-          <ul class="feature-list">
-            <li><span class="check">✓</span> Trained on your content &amp; knowledge base</li>
-            <li><span class="check">✓</span> Multilingual support out of the box</li>
-            <li><span class="check">✓</span> Seamless CRM &amp; helpdesk integrations</li>
-            <li><span class="check">✓</span> Full conversation analytics dashboard</li>
-            <li><span class="check">✓</span> Human hand-off when needed</li>
-          </ul>
-          <a href="#contact" class="btn btn-primary">Request a demo</a>
+
+        <div class="hero-visual reveal" style="transition-delay:0.15s">
+          <div class="hero-circle"></div>
+          <div class="hero-bottles">
+            <!-- Bottle 2: spray bottle left -->
+            <div class="bottle bottle-2">
+              <div class="bottle-spray-head">
+                <div class="bottle-trigger"></div>
+              </div>
+              <div class="bottle-neck bottle-neck-2"></div>
+              <div class="bottle-body bottle-body-2">
+                <div class="bottle-label bottle-label-2"><span>LUNDR</span></div>
+              </div>
+            </div>
+            <!-- Bottle 1: tall pump bottle center -->
+            <div class="bottle bottle-1">
+              <div class="bottle-pump-head">
+                <div class="bottle-pump-rod"></div>
+              </div>
+              <div class="bottle-neck bottle-neck-1"></div>
+              <div class="bottle-body bottle-body-1">
+                <div class="bottle-label bottle-label-1"><span>LUNDR</span></div>
+              </div>
+            </div>
+            <!-- Bottle 3: round jar right -->
+            <div class="bottle bottle-3">
+              <div class="bottle-cap bottle-cap-3"></div>
+              <div class="bottle-body bottle-body-3">
+                <div class="bottle-label bottle-label-3"><span>LUNDR</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- Leaf accents -->
+          <div class="leaf leaf-1"></div>
+          <div class="leaf leaf-2"></div>
+          <div class="leaf leaf-3"></div>
+          <div class="leaf leaf-4"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         TRUST / CERTIFICATION BAR
+    ══════════════════════════════════════════════ -->
+    <div class="trust-bar" aria-label="Certifikace a výhody">
+      <div class="trust-track">
+        <div class="trust-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="var(--green-pale)"/></svg>
+          <span>Ecocert certifikováno</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="9" rx="4" ry="3" stroke="var(--green)" stroke-width="1.7"/><path d="M4 19c0-4 3.58-7 8-7s8 3 8 7" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"/><path d="M17 6c1.5-1 3-0.5 3 1s-1.5 2.5-3 2" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>Cruelty-free</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--green)" stroke-width="1.7"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="var(--green)" stroke-width="1.7"/></svg>
+          <span>EU Ecolabel</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6 2 2 8 2 12c2-1 4-2 5-1 1-3 3-5 5-5s4 2 5 5c1-1 3 0 5 1 0-4-4-10-10-10z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" fill="var(--green-pale)"/><path d="M12 22c-3 0-6-2-8-5 2 0 4 0 5-1 0 2 1 4 3 6z" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>100% Vegan</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.7"/><circle cx="18.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.7"/></svg>
+          <span>Doprava od 99 Kč · Zdarma nad 500 Kč</span>
+        </div>
+        <!-- Duplicate for seamless loop -->
+        <div class="trust-item" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="var(--green-pale)"/></svg>
+          <span>Ecocert certifikováno</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="9" rx="4" ry="3" stroke="var(--green)" stroke-width="1.7"/><path d="M4 19c0-4 3.58-7 8-7s8 3 8 7" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"/><path d="M17 6c1.5-1 3-0.5 3 1s-1.5 2.5-3 2" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>Cruelty-free</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--green)" stroke-width="1.7"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="var(--green)" stroke-width="1.7"/></svg>
+          <span>EU Ecolabel</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6 2 2 8 2 12c2-1 4-2 5-1 1-3 3-5 5-5s4 2 5 5c1-1 3 0 5 1 0-4-4-10-10-10z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" fill="var(--green-pale)"/><path d="M12 22c-3 0-6-2-8-5 2 0 4 0 5-1 0 2 1 4 3 6z" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>100% Vegan</span>
+        </div>
+        <div class="trust-sep" aria-hidden="true">·</div>
+        <div class="trust-item" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.7"/><circle cx="18.5" cy="18.5" r="2.5" stroke="var(--green)" stroke-width="1.7"/></svg>
+          <span>Doprava od 99 Kč · Zdarma nad 500 Kč</span>
         </div>
       </div>
+    </div>
 
-      <!-- Product 2 — Invoice Automation -->
-      <div class="product-card card-invoice reverse">
-        <div class="product-visual">
-          <div class="invoice-mockup">
-            <div class="inv-header">
-              <div class="inv-icon">&#128196;</div>
-              <div>
-                <div class="inv-title">Invoice Processing</div>
-                <div class="inv-sub">AI extraction engine</div>
+    <!-- ══════════════════════════════════════════════
+         CATEGORIES
+    ══════════════════════════════════════════════ -->
+    <section class="categories section" aria-labelledby="catHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2 id="catHeading" class="section-h2">Čistota pro celou domácnost</h2>
+        </div>
+        <div class="cat-grid">
+
+          <a href="#produkty-kuchyne" class="cat-card cat-kitchen reveal" style="transition-delay:0.05s" aria-label="Přejít na kuchyňské produkty">
+            <div class="cat-visual cat-visual-kitchen">
+              <div class="cat-bottle cb1"></div>
+              <div class="cat-bottle cb2"></div>
+              <div class="cat-bottle cb3"></div>
+            </div>
+            <div class="cat-body">
+              <h3 class="cat-name">Kuchyně</h3>
+              <p class="cat-desc">Mycí prostředky, odmašťovače a tablety do myčky</p>
+              <span class="cat-link">Prozkoumat →</span>
+            </div>
+          </a>
+
+          <a href="#produkty-koupelna" class="cat-card cat-bath reveal" style="transition-delay:0.1s" aria-label="Přejít na koupelnové produkty">
+            <div class="cat-visual cat-visual-bath">
+              <div class="cat-bottle cb4"></div>
+              <div class="cat-bottle cb5"></div>
+              <div class="cat-bottle cb6"></div>
+            </div>
+            <div class="cat-body">
+              <h3 class="cat-name">Koupelna</h3>
+              <p class="cat-desc">Čisticí spreje, tekuté mýdlo a péče o povrchy</p>
+              <span class="cat-link">Prozkoumat →</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         PRODUCTS
+    ══════════════════════════════════════════════ -->
+    <section class="products section" id="produkty" aria-label="Produkty">
+      <div class="container">
+
+        <!-- Kitchen sub-section -->
+        <div id="produkty-kuchyne" class="products-sub">
+          <div class="products-sub-header reveal">
+            <span class="section-tag tag-green">Kuchyně</span>
+            <h2 class="section-h2">Čistá kuchyně bez kompromisů</h2>
+          </div>
+          <div id="kitchenGrid" class="product-grid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Bathroom sub-section -->
+        <div id="produkty-koupelna" class="products-sub" style="margin-top:5rem">
+          <div class="products-sub-header reveal">
+            <span class="section-tag tag-lavender">Koupelna</span>
+            <h2 class="section-h2">Přírodní péče o koupelnu</h2>
+          </div>
+          <div id="bathGrid" class="product-grid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         VALUES
+    ══════════════════════════════════════════════ -->
+    <section class="values section" id="hodnoty" aria-labelledby="valHeading">
+      <div class="container values-inner">
+
+        <div class="values-content">
+          <div class="reveal">
+            <span class="section-tag tag-green">Proč LUNDR</span>
+            <h2 id="valHeading" class="section-h2">Severská filozofie čistoty</h2>
+            <p class="values-lead">
+              Inspirujeme se skandinávskou přírodou — čistou, nedotčenou a v rovnováze. Každý produkt LUNDR vznikl s jedním cílem: čistá domácnost bez kompromisů pro přírodu.
+            </p>
+          </div>
+          <div class="values-list">
+            <div class="value-item reveal" style="transition-delay:0.05s">
+              <div class="value-num">01</div>
+              <div class="value-body">
+                <h3 class="value-name">Přírodní složení</h3>
+                <p class="value-desc">Pouze obnovitelné a biologicky odbouratelné suroviny. Žádné škodlivé chemikálie, žádné skryté látky.</p>
               </div>
             </div>
-            <div class="inv-rows">
-              <div class="inv-row">
-                <span class="inv-label">Supplier</span>
-                <span class="inv-value extracted">Acme Corp s.r.o.</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">Invoice No.</span>
-                <span class="inv-value extracted">2024-08751</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">Date</span>
-                <span class="inv-value extracted">10. 05. 2026</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">Total (VAT incl.)</span>
-                <span class="inv-value extracted">48 350 Kč</span>
-              </div>
-              <div class="inv-row">
-                <span class="inv-label">VAT amount</span>
-                <span class="inv-value extracted">8 350 Kč</span>
+            <div class="value-item reveal" style="transition-delay:0.1s">
+              <div class="value-num">02</div>
+              <div class="value-body">
+                <h3 class="value-name">Udržitelné obaly</h3>
+                <p class="value-desc">Lahve z recyklovaného plastu. Náhradní náplně ušetří až 75 % plastového odpadu. Kartony bez plastových příměsí.</p>
               </div>
             </div>
-            <div class="inv-export-row">
-              <div class="export-chip excel"><span>XLS</span> Export to Excel</div>
-              <div class="export-chip pohoda"><span>P</span> Send to Pohoda</div>
+            <div class="value-item reveal" style="transition-delay:0.15s">
+              <div class="value-num">03</div>
+              <div class="value-body">
+                <h3 class="value-name">Transparentnost</h3>
+                <p class="value-desc">Všechny složky jsou veřejně dostupné. Žádná tajemství, žádné chemické zkratky, které byste museli googlit.</p>
+              </div>
+            </div>
+            <div class="value-item reveal" style="transition-delay:0.2s">
+              <div class="value-num">04</div>
+              <div class="value-body">
+                <h3 class="value-name">Šetrné k přírodě</h3>
+                <p class="value-desc">Biologicky odbouratelné, bezpečné pro vodní ekosystémy. Vhodné pro domácnosti s dětmi a zvířaty.</p>
+              </div>
             </div>
           </div>
         </div>
-        <div class="product-content">
-          <div class="product-tag invoice-tag">Invoice Automation</div>
-          <h3>Extract invoices. Auto-fill Excel &amp; Pohoda.</h3>
-          <p>
-            Stop retyping invoices by hand. Our AI reads PDFs and scanned images,
-            extracts every relevant field, and pushes the data directly into your
-            Excel spreadsheets or Pohoda accounting system — error-free, in seconds.
+
+        <div class="values-visual reveal from-right" style="transition-delay:0.1s">
+          <div class="val-circle"></div>
+          <div class="val-bottles">
+            <div class="val-bottle vb1"></div>
+            <div class="val-bottle vb2"></div>
+            <div class="val-bottle vb3"></div>
+          </div>
+          <div class="val-cert val-cert-1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="var(--green)" stroke="var(--green)" stroke-width="1"/></svg>
+            Ecocert
+          </div>
+          <div class="val-cert val-cert-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--green)" stroke-width="1.7"/><path d="M2 12h20" stroke="var(--green)" stroke-width="1.5"/></svg>
+            EU Ecolabel
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         HOW IT WORKS
+    ══════════════════════════════════════════════ -->
+    <section class="how section" id="jak-to-funguje" aria-labelledby="howHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-tag tag-green">Systém náhradních náplní</span>
+          <h2 id="howHeading" class="section-h2">Méně plastu, stejná čistota</h2>
+        </div>
+
+        <div class="how-steps">
+          <div class="how-step reveal" style="transition-delay:0.05s">
+            <div class="how-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </div>
+            <div class="how-num">01</div>
+            <h3 class="how-name">Objednáte startovací sadu</h3>
+            <p class="how-desc">Zahrnuje skleněnou nebo recyklovanou lahev. Jednorázová investice na celý rok.</p>
+          </div>
+          <div class="how-arrow" aria-hidden="true">→</div>
+          <div class="how-step reveal" style="transition-delay:0.1s">
+            <div class="how-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2v6m0 0l-3-3m3 3l3-3" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="8" width="18" height="13" rx="2" stroke="var(--green)" stroke-width="1.7"/></svg>
+            </div>
+            <div class="how-num">02</div>
+            <h3 class="how-name">Doplníte náhradní náplní</h3>
+            <p class="how-desc">Kompaktní náhradní náplň, 75 % méně plastu než nová lahev. Jednoduché doplnění vodou.</p>
+          </div>
+          <div class="how-arrow" aria-hidden="true">→</div>
+          <div class="how-step reveal" style="transition-delay:0.15s">
+            <div class="how-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2C6 2 2 8 2 12c2-1 4-2 5-1 1-3 3-5 5-5s4 2 5 5c1-1 3 0 5 1 0-4-4-10-10-10z" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" fill="var(--green-pale)"/><path d="M7 20c1.5-3 7-3 8 0" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="how-num">03</div>
+            <h3 class="how-name">Šetříte přírodu i peníze</h3>
+            <p class="how-desc">O 30 % levnější než originální produkt. Nižší uhlíková stopa, méně plastového odpadu.</p>
+          </div>
+        </div>
+
+        <div class="how-stats reveal" style="transition-delay:0.2s">
+          <div class="how-stat">
+            <span class="how-stat-num">75 %</span>
+            <span class="how-stat-label">méně plastového odpadu</span>
+          </div>
+          <div class="how-stat-sep" aria-hidden="true"></div>
+          <div class="how-stat">
+            <span class="how-stat-num">30 %</span>
+            <span class="how-stat-label">úspora při doplnění</span>
+          </div>
+          <div class="how-stat-sep" aria-hidden="true"></div>
+          <div class="how-stat">
+            <span class="how-stat-num">1 000 t</span>
+            <span class="how-stat-label">plastů ušetřeno ročně</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         REVIEWS
+    ══════════════════════════════════════════════ -->
+    <section class="reviews section" id="recenze" aria-labelledby="revHeading">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="section-tag tag-green">Zákaznické recenze</span>
+          <h2 id="revHeading" class="section-h2">Co říkají naši zákazníci</h2>
+          <p class="section-sub">Přes 4&nbsp;800 spokojených domácností po celé České republice</p>
+        </div>
+
+        <div class="reviews-grid">
+
+          <article class="review-card reveal" style="transition-delay:0.05s">
+            <div class="review-stars" aria-label="5 hvězd">★★★★★</div>
+            <p class="review-text">"Konečně mycí prostředek, který doopravdy funguje a přitom neničí přírodu. Vůně citrusu je nádherná a na mých rukou není cítit žádnou chemii."</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background:var(--green-pale);color:var(--green)">MK</div>
+              <div>
+                <div class="review-name">Markéta K.</div>
+                <div class="review-city">Praha</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="review-card reveal" style="transition-delay:0.1s">
+            <div class="review-stars" aria-label="5 hvězd">★★★★★</div>
+            <p class="review-text">"Systém náhradních náplní je geniální. Ušetřím peníze a zároveň nemusím mít špatné svědomí za plast. Kuchyňský sprej je absolutně nejlepší."</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background:#E8EDF4;color:#3D5B7B">TN</div>
+              <div>
+                <div class="review-name">Tomáš N.</div>
+                <div class="review-city">Brno</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="review-card reveal" style="transition-delay:0.15s">
+            <div class="review-stars" aria-label="5 hvězd">★★★★★</div>
+            <p class="review-text">"Čistič koupelny s levandulí je zázrak. Vodní kámen zmizí bez drhnutí a koupelna voní jak luxusní spa. Doporučuji všem!"</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background:#EDE8F4;color:#5A4D7B">LH</div>
+              <div>
+                <div class="review-name">Lucie H.</div>
+                <div class="review-city">Ostrava</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="review-card reveal" style="transition-delay:0.2s">
+            <div class="review-stars" aria-label="5 hvězd">★★★★★</div>
+            <p class="review-text">"Tablety do myčky jsou super. Nádobí je čisté, nemám pocit, že by na něm zůstaly chemikálie. A cena je naprosto férová."</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background:var(--sand-pale);color:#7A6040">PV</div>
+              <div>
+                <div class="review-name">Pavel V.</div>
+                <div class="review-city">Plzeň</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="review-card reveal" style="transition-delay:0.25s">
+            <div class="review-stars" aria-label="5 hvězd">★★★★★</div>
+            <p class="review-text">"Tekuté mýdlo Nordic Birch je nádherné. Ruce mám konečně hydratované i po opakovaném mytí. Celá rodina si ho oblíbila."</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background:#EAF2ED;color:var(--green)">RB</div>
+              <div>
+                <div class="review-name">Renata B.</div>
+                <div class="review-city">Olomouc</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="review-card reveal" style="transition-delay:0.3s">
+            <div class="review-stars" aria-label="5 hvězd">★★★★★</div>
+            <p class="review-text">"Objednala jsem poprvé před třemi měsíci a od té doby nakupuji pravidelně. Odmašťovač s tea tree olejem zvládne i opečený tuk v troubě."</p>
+            <div class="review-author">
+              <div class="review-avatar" style="background:#E8F4F4;color:#3D7A7B">JD</div>
+              <div>
+                <div class="review-name">Jana D.</div>
+                <div class="review-city">České Budějovice</div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         NEWSLETTER
+    ══════════════════════════════════════════════ -->
+    <section class="newsletter" id="newsletter" aria-labelledby="nlHeading">
+      <div class="container newsletter-inner">
+
+        <div class="nl-content reveal">
+          <span class="section-tag tag-sand">Buďte první</span>
+          <h2 id="nlHeading" class="section-h2">Novinky a exkluzivní nabídky</h2>
+          <p class="nl-text">
+            Přihlaste se k odběru a získejte <strong>10 % slevu</strong> na první objednávku. Jako první se dozvíte o nových produktech, ekologických tipech a sezónních akcích.
           </p>
-          <ul class="feature-list">
-            <li><span class="check check-invoice">✓</span> Supports PDF, JPG, PNG, TIFF &amp; scans</li>
-            <li><span class="check check-invoice">✓</span> Structured export to Excel (.xlsx)</li>
-            <li><span class="check check-invoice">✓</span> Direct Pohoda XML / API integration</li>
-            <li><span class="check check-invoice">✓</span> Duplicate &amp; anomaly detection</li>
-            <li><span class="check check-invoice">✓</span> Batch processing — hundreds at once</li>
-          </ul>
-          <a href="#contact" class="btn btn-invoice">Request a demo</a>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- HOW IT WORKS -->
-  <section class="how-it-works" id="how-it-works">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">How it works</span>
-        <h2>Up and running in three steps</h2>
-      </div>
-      <div class="steps-grid">
-        <div class="step">
-          <div class="step-num">01</div>
-          <h4>Connect</h4>
-          <p>Integrate via our no-code setup wizard or REST API. Plug into your existing tools in under an hour.</p>
+        <div class="nl-form-wrap reveal" style="transition-delay:0.1s">
+          <form id="newsletterForm" class="nl-form" novalidate>
+            <div class="nl-input-row">
+              <input
+                type="email"
+                id="nlEmail"
+                name="email"
+                class="nl-input"
+                placeholder="vas@email.cz"
+                required
+                aria-label="Vaše e-mailová adresa"
+              />
+              <button type="submit" class="btn btn-primary nl-btn">Odebírat</button>
+            </div>
+            <p class="nl-disclaimer">Žádný spam. Odhlášení jedním klikem. GDPR compliant.</p>
+            <p id="nlSuccess" class="nl-success" style="display:none" role="status">
+              Děkujeme! Sleva 10 % čeká ve vaší poště.
+            </p>
+          </form>
         </div>
-        <div class="step-arrow">&#8594;</div>
-        <div class="step">
-          <div class="step-num">02</div>
-          <h4>Configure</h4>
-          <p>Feed the AI your documents, knowledge base, or invoice templates. The model adapts to your data.</p>
-        </div>
-        <div class="step-arrow">&#8594;</div>
-        <div class="step">
-          <div class="step-num">03</div>
-          <h4>Automate</h4>
-          <p>Watch repetitive tasks disappear. Monitor results in real-time on your analytics dashboard.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- BENEFITS -->
-  <section class="benefits" id="benefits">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Why NexAI</span>
-        <h2>Built for businesses that move fast</h2>
       </div>
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <div class="benefit-icon">&#9889;</div>
-          <h4>Instant deployment</h4>
-          <p>Go live in hours, not months. No custom development needed for standard integrations.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#128275;</div>
-          <h4>Enterprise-grade security</h4>
-          <p>Data encrypted at rest and in transit. GDPR compliant. Hosted in EU data centers.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#128200;</div>
-          <h4>Measurable ROI</h4>
-          <p>Customers report 60–80% reduction in manual processing time within the first month.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#127757;</div>
-          <h4>Czech &amp; Slovak ready</h4>
-          <p>Full support for Czech and Slovak languages, Pohoda accounting, and local invoice formats.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#128296;</div>
-          <h4>Customizable</h4>
-          <p>Tailor AI behaviour, branding, and output formats to match your exact business rules.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">&#129309;</div>
-          <h4>Dedicated support</h4>
-          <p>Onboarding specialist, SLA-backed support, and a dedicated account manager from day one.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- CTA / CONTACT -->
-  <section class="contact" id="contact">
-    <div class="container contact-inner">
-      <div class="contact-text">
-        <span class="section-tag">Get started</span>
-        <h2>Ready to automate your workflow?</h2>
-        <p>Leave your details and our team will reach out within one business day to schedule a personalised demo.</p>
-        <ul class="contact-perks">
-          <li>&#10003; Free 14-day trial</li>
-          <li>&#10003; No credit card required</li>
-          <li>&#10003; Setup assistance included</li>
+  </main>
+
+  <!-- ══════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container footer-grid">
+
+      <div class="footer-brand">
+        <a href="#" class="footer-logo" aria-label="LUNDR — domů">LUNDR</a>
+        <p class="footer-tagline">Nordická čistota pro váš domov. Ekologické čisticí prostředky vyrobené s úctou k přírodě.</p>
+        <div class="footer-socials">
+          <a href="#" class="footer-social" aria-label="Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.7"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+          </a>
+          <a href="#" class="footer-social" aria-label="Facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#" class="footer-social" aria-label="Pinterest">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.77 1.23-5.22 1.23-5.22s-.31-.63-.31-1.56c0-1.46.85-2.55 1.9-2.55.9 0 1.33.67 1.33 1.48 0 .9-.58 2.26-.87 3.51-.25 1.05.52 1.9 1.54 1.9 1.85 0 3.09-2.37 3.09-5.18 0-2.14-1.44-3.77-4.05-3.77-2.95 0-4.78 2.21-4.78 4.67 0 .85.25 1.44.63 1.9.17.2.19.28.13.51-.05.16-.15.55-.19.7-.07.24-.28.32-.51.23-1.39-.57-2.03-2.1-2.03-3.82 0-2.84 2.4-6.25 7.16-6.25 3.83 0 6.35 2.78 6.35 5.76 0 3.94-2.19 6.88-5.4 6.88-1.08 0-2.1-.58-2.45-1.23l-.68 2.58c-.24.93-.71 1.87-1.14 2.6.86.27 1.77.41 2.71.41 5.52 0 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" stroke-width="1.3"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="footer-col-title">Produkty</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="#produkty-kuchyne" class="footer-link">Kuchyně</a></li>
+          <li><a href="#produkty-koupelna" class="footer-link">Koupelna</a></li>
+          <li><a href="#produkty" class="footer-link">Náhradní náplně</a></li>
+          <li><a href="#produkty" class="footer-link">Startovací sady</a></li>
+          <li><a href="#newsletter" class="footer-link">Předplatné</a></li>
         </ul>
       </div>
-      <form class="contact-form" id="contactForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="name">Full name</label>
-            <input type="text" id="name" placeholder="Jan Novák" required />
-          </div>
-          <div class="form-group">
-            <label for="company">Company</label>
-            <input type="text" id="company" placeholder="Acme s.r.o." />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="email">Work email</label>
-          <input type="email" id="email" placeholder="jan@acme.cz" required />
-        </div>
-        <div class="form-group">
-          <label for="product">Product of interest</label>
-          <select id="product">
-            <option value="">Select a product…</option>
-            <option>AI Chat for website</option>
-            <option>Invoice Automation (Excel / Pohoda)</option>
-            <option>Both products</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="message">Message (optional)</label>
-          <textarea id="message" rows="3" placeholder="Tell us a bit about your use case…"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary full-width">Send request &rarr;</button>
-        <p class="form-note">We respect your privacy. No spam, ever.</p>
-      </form>
-    </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <a href="#" class="logo">Nex<span>AI</span></a>
-        <p>AI automation tools built for modern businesses.</p>
+      <div class="footer-col">
+        <h3 class="footer-col-title">Informace</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="#hodnoty" class="footer-link">Naše hodnoty</a></li>
+          <li><a href="#jak-to-funguje" class="footer-link">Jak to funguje</a></li>
+          <li><a href="#recenze" class="footer-link">Recenze</a></li>
+          <li><a href="#" class="footer-link">Blog</a></li>
+          <li><a href="#" class="footer-link">O nás</a></li>
+        </ul>
       </div>
-      <div class="footer-links">
-        <div class="footer-col">
-          <h5>Products</h5>
-          <ul>
-            <li><a href="#products">AI Chat</a></li>
-            <li><a href="#products">Invoice Automation</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h5>Company</h5>
-          <ul>
-            <li><a href="#benefits">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h5>Legal</h5>
-          <ul>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-          </ul>
-        </div>
+
+      <div class="footer-col">
+        <h3 class="footer-col-title">Zákaznická podpora</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="#" class="footer-link">Kontakt</a></li>
+          <li><a href="#" class="footer-link">Doprava a doručení</a></li>
+          <li><a href="#" class="footer-link">Vrácení zboží</a></li>
+          <li><a href="#" class="footer-link">FAQ</a></li>
+          <li><a href="mailto:ahoj@lundr.cz" class="footer-link">ahoj@lundr.cz</a></li>
+        </ul>
       </div>
+
+      <div class="footer-col">
+        <h3 class="footer-col-title">Právní</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="#" class="footer-link">Obchodní podmínky</a></li>
+          <li><a href="#" class="footer-link">Ochrana osobních údajů</a></li>
+          <li><a href="#" class="footer-link">GDPR</a></li>
+          <li><a href="#" class="footer-link">Cookies</a></li>
+        </ul>
+      </div>
+
     </div>
-    <div class="footer-bottom container">
-      <span>&copy; 2026 NexAI. All rights reserved.</span>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p class="footer-copy">© 2026 LUNDR s.r.o. | IČO: 123 45 678</p>
+        <div class="footer-payments" aria-label="Přijímáme platby">
+          <span class="payment-chip">VISA</span>
+          <span class="payment-chip">MC</span>
+          <span class="payment-chip">GP</span>
+          <span class="payment-chip">Apple Pay</span>
+        </div>
+      </div>
     </div>
   </footer>
+
+  <!-- ══════════════════════════════════════════════
+       TOAST NOTIFICATION
+  ══════════════════════════════════════════════ -->
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="toast-inner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="toastMsg"></span>
+    </div>
+  </div>
 
   <script src="main.js"></script>
 </body>
