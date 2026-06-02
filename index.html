@@ -110,12 +110,26 @@
       <div class="product-card card-invoice reverse">
         <div class="product-visual">
           <div class="invoice-mockup">
-            <div class="inv-header">
-              <div class="inv-icon">&#128196;</div>
-              <div>
-                <div class="inv-title">Invoice Processing</div>
-                <div class="inv-sub">AI extraction engine</div>
+            <div class="inv-flow-steps">
+              <div class="inv-flow-step">
+                <div class="inv-flow-icon">&#128241;</div>
+                <span>Snapshot</span>
               </div>
+              <div class="inv-flow-arr">&#8594;</div>
+              <div class="inv-flow-step">
+                <div class="inv-flow-icon">&#128231;</div>
+                <span>Email</span>
+              </div>
+              <div class="inv-flow-arr">&#8594;</div>
+              <div class="inv-flow-step inv-flow-active">
+                <div class="inv-flow-icon">&#10003;</div>
+                <span>Auto-fill</span>
+              </div>
+            </div>
+            <div class="inv-email-chip">
+              <span class="inv-email-label">To:</span>
+              <span class="inv-email-addr">faktury@restaurant.cz</span>
+              <span class="inv-email-status">&#9679; Processing</span>
             </div>
             <div class="inv-rows">
               <div class="inv-row">
@@ -147,18 +161,18 @@
         </div>
         <div class="product-content">
           <div class="product-tag invoice-tag">Invoice Automation</div>
-          <h3>Extract invoices. Auto-fill Excel &amp; Pohoda.</h3>
+          <h3>Photo &#8594; Email &#8594; Pohoda. Zero typing.</h3>
           <p>
-            Stop retyping invoices by hand. Our AI reads PDFs and scanned images,
-            extracts every relevant field, and pushes the data directly into your
-            Excel spreadsheets or Pohoda accounting system — error-free, in seconds.
+            Photograph the invoice. Forward it to your dedicated inbox. That's it —
+            NexAI reads every field and fills your Pohoda or Excel automatically.
+            No app, no scanner, no retyping.
           </p>
           <ul class="feature-list">
+            <li><span class="check check-invoice">✓</span> Email capture — forward a photo from any phone</li>
             <li><span class="check check-invoice">✓</span> Supports PDF, JPG, PNG, TIFF &amp; scans</li>
-            <li><span class="check check-invoice">✓</span> Structured export to Excel (.xlsx)</li>
             <li><span class="check check-invoice">✓</span> Direct Pohoda XML / API integration</li>
+            <li><span class="check check-invoice">✓</span> Structured export to Excel (.xlsx)</li>
             <li><span class="check check-invoice">✓</span> Duplicate &amp; anomaly detection</li>
-            <li><span class="check check-invoice">✓</span> Batch processing — hundreds at once</li>
           </ul>
           <a href="#contact" class="btn btn-invoice">Request a demo</a>
         </div>
@@ -171,25 +185,36 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">How it works</span>
-        <h2>Up and running in three steps</h2>
+        <h2>Invoice in. Accounting done.</h2>
+        <p>From paper receipt to accounting record in under 60 seconds — no keyboard needed.</p>
       </div>
       <div class="steps-grid">
         <div class="step">
+          <span class="step-icon">&#128241;</span>
           <div class="step-num">01</div>
-          <h4>Connect</h4>
-          <p>Integrate via our no-code setup wizard or REST API. Plug into your existing tools in under an hour.</p>
+          <h4>Photograph</h4>
+          <p>Snap a photo of any paper invoice or delivery note. Any phone, any lighting.</p>
         </div>
         <div class="step-arrow">&#8594;</div>
         <div class="step">
+          <span class="step-icon">&#128231;</span>
           <div class="step-num">02</div>
-          <h4>Configure</h4>
-          <p>Feed the AI your documents, knowledge base, or invoice templates. The model adapts to your data.</p>
+          <h4>Email it in</h4>
+          <p>Forward the photo to your dedicated inbox (e.g. faktury@restaurant.cz). No app needed.</p>
         </div>
         <div class="step-arrow">&#8594;</div>
         <div class="step">
+          <span class="step-icon">&#129302;</span>
           <div class="step-num">03</div>
-          <h4>Automate</h4>
-          <p>Watch repetitive tasks disappear. Monitor results in real-time on your analytics dashboard.</p>
+          <h4>AI extracts</h4>
+          <p>NexAI reads supplier, date, items, VAT, and totals — straight from the image, in seconds.</p>
+        </div>
+        <div class="step-arrow">&#8594;</div>
+        <div class="step">
+          <span class="step-icon">&#9989;</span>
+          <div class="step-num">04</div>
+          <h4>System updated</h4>
+          <p>All fields land in Pohoda or Excel automatically. Your accountant reviews, never rekeys.</p>
         </div>
       </div>
     </div>
