@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rental CRM Praha — облік квартир і податковий калькулятор</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="crm.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="crm-body">
+
+  <header class="nav-wrap">
+    <nav class="nav container">
+      <a href="index.html" class="logo">Nex<span>AI</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">&larr; На головну</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="crm-main container">
+    <div class="crm-head">
+      <span class="section-tag">Rental CRM · Praha</span>
+      <h1>Облік 9 квартир і податковий калькулятор</h1>
+      <p class="crm-disclaimer">
+        Усі дані зберігаються лише у вашому браузері (localStorage), нікуди не передаються.
+        Розрахунок податку є орієнтовним за ставками 2025–2026, не є податковою консультацією —
+        для офіційної декларації зверніться до daňový poradce.
+      </p>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="crm-dashboard" id="dashboard">
+      <div class="dash-card">
+        <span class="dash-label">Квартир</span>
+        <span class="dash-value" id="statApartments">0</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-label">Здається</span>
+        <span class="dash-value" id="statOccupied">0</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-label">Дохід / місяць</span>
+        <span class="dash-value" id="statMonthlyIncome">0 Kč</span>
+      </div>
+      <div class="dash-card">
+        <span class="dash-label">Дохід / рік (оцінка)</span>
+        <span class="dash-value" id="statYearlyIncome">0 Kč</span>
+      </div>
+    </section>
+
+    <!-- APARTMENTS TABLE -->
+    <section class="crm-section">
+      <div class="crm-section-head">
+        <h2>Квартири</h2>
+        <button class="btn btn-primary" id="addApartmentBtn">+ Додати квартиру</button>
+      </div>
+      <div class="table-wrap">
+        <table class="crm-table" id="apartmentsTable">
+          <thead>
+            <tr>
+              <th>Адреса / назва</th>
+              <th>Орендар</th>
+              <th>Статус</th>
+              <th>Оренда / міс. (Kč)</th>
+              <th>Витрати / міс. (Kč)</th>
+              <th>Чистий дохід / рік<br /><small>(після податку, оцінка)</small></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="apartmentsBody"></tbody>
+        </table>
+      </div>
+      <p class="crm-disclaimer" style="margin-top:12px;">
+        Колонка «чистий дохід» рахується за режимом, обраним у податковому калькуляторі нижче,
+        і розподіляє загальний податок між квартирами пропорційно їхній частці доходу — це оцінка для статистики, не точна сума до сплати.
+      </p>
+    </section>
+
+    <!-- BOOKKEEPING / STATISTICS -->
+    <section class="crm-section" id="bookkeepingSection">
+      <div class="crm-section-head">
+        <h2>Статистика та бухгалтерія (рік)</h2>
+      </div>
+      <div class="tax-result" id="bookkeepingResult" style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:24px 28px;"></div>
+    </section>
+
+    <!-- EXPENSES LOG -->
+    <section class="crm-section">
+      <div class="crm-section-head">
+        <h2>Журнал витрат</h2>
+        <button class="btn btn-primary" id="addExpenseBtn">+ Додати витрату</button>
+      </div>
+      <div class="table-wrap">
+        <table class="crm-table" id="expensesTable">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Квартира</th>
+              <th>Категорія</th>
+              <th>Сума (Kč)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="expensesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAX CALCULATOR -->
+    <section class="crm-section tax-section">
+      <div class="crm-section-head">
+        <h2>Податковий калькулятор</h2>
+      </div>
+
+      <div class="tax-grid">
+        <div class="tax-form">
+          <div class="form-group">
+            <label for="taxRegime">Податковий режим</label>
+            <select id="taxRegime">
+              <option value="par9-flat">§9 — оренда як фізособа, паушальні витрати 30%</option>
+              <option value="par9-real">§9 — оренда як фізособа, реальні витрати</option>
+              <option value="osvc-flat">OSVČ (živnostenský list), паушал 60%</option>
+              <option value="sro">s.r.o. — корпоративний податок 21%</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="taxIncome">Річний дохід від оренди (Kč)</label>
+            <input type="number" id="taxIncome" min="0" step="1000" />
+          </div>
+          <div class="form-group" id="realExpensesGroup">
+            <label for="taxRealExpenses">Реальні річні витрати (Kč)</label>
+            <input type="number" id="taxRealExpenses" min="0" step="1000" />
+          </div>
+          <button class="btn btn-primary" id="calcTaxBtn">Розрахувати</button>
+        </div>
+
+        <div class="tax-result" id="taxResult">
+          <p class="tax-placeholder">Заповніть форму і натисніть «Розрахувати».</p>
+        </div>
+      </div>
+
+      <div class="tax-note">
+        <h4>Важливо знати</h4>
+        <ul>
+          <li>При оренді як фізособа (§9) <strong>не сплачуються</strong> соціальне й медичне страхування — лише податок на прибуток.</li>
+          <li>Паушальні витрати за §9 обмежені стелею 600 000 Kč/рік (тобто максимум при доході понад 2 000 000 Kč/рік).</li>
+          <li>Ставка податку 2026: 15% з бази до 1 762 812 Kč, 23% — з частини понад цю межу. Базова знижка на платника — 30 840 Kč/рік.</li>
+          <li>При 9 квартирах фінансова управа може вважати діяльність систематичним підприємництвом і вимагати реєстрацію OSVČ — це варто уточнити з daňový poradce.</li>
+          <li>Оренда житла (бытового призначення) звільнена від ПДВ незалежно від обороту; короткострокова (Airbnb-подібна) оренда вважається послугою розміщення і може підпадати під ПДВ при обороті понад 2 000 000 Kč/12 міс.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom container">
+      <span>Rental CRM · демо-інструмент, дані локальні, не є податковою консультацією.</span>
+    </div>
+  </footer>
+
+  <script src="crm.js"></script>
+</body>
+</html>
